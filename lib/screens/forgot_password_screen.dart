@@ -34,10 +34,10 @@ class _ForgotPasswordScreenState
 
   try {
     await Supabase.instance.client.auth.resetPasswordForEmail(
-  email,
-  redirectTo:
-      'com.example.flutter_application_1://reset-password',
-);
+      email,
+      redirectTo:
+          'https://bhattdhruva.github.io/flutter_application_1/',
+    );
     if (!mounted) return;
 
     setState(() {

@@ -236,7 +236,7 @@ class _LogInScreenState extends State<LogInScreen> {
       await supabase.auth.resetPasswordForEmail(
         email,
         redirectTo:
-            'com.example.flutter_application_1://reset-password',
+            'https://bhattdhruva.github.io/flutter_application_1/',
       );
 
       if (!mounted) {
