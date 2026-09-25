@@ -16,11 +16,11 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
   int _currentIndex = 0;
 
   bool _isLoading = true;
+  bool _isReportsLoading = false;
 
   String? _errorMessage;
 
   String _companyName = '';
-
   String _companyId = '';
 
   List<Map<String, dynamic>> _employees = [];
@@ -28,10 +28,30 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
   int _presentToday = 0;
 
   String _employeeSearchQuery = '';
-
   String _leaveSearchQuery = '';
 
   final List<Map<String, String>> _adminLeaveRequests = [];
+
+  // ============================================================
+  // REPORT DATA
+  // ============================================================
+
+  int _monthlyAttendanceRecords = 0;
+  int _monthlyCompletedShifts = 0;
+  int _monthlyOpenShifts = 0;
+  int _monthlyLeaveRequests = 0;
+
+  double _averageDailyHours = 0;
+  double _attendanceCompletionPercentage = 0;
+
+  DateTime _reportMonth = DateTime(
+    DateTime.now().year,
+    DateTime.now().month,
+  );
+
+  // ============================================================
+  // INIT
+  // ============================================================
 
   @override
   void initState() {
@@ -91,13 +111,14 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
       // --------------------------------------------------------
       // 3. GET EMPLOYEES
       // --------------------------------------------------------
-final employees = await supabase
-    .from('employees')
-    .select(
-      'id, employee_code, full_name, company_id, auth_user_id',
-    )
-    .eq('company_id', companyId)
-    .order('full_name');
+
+      final employees = await supabase
+          .from('employees')
+          .select(
+            'id, employee_code, full_name, company_id, auth_user_id',
+          )
+          .eq('company_id', companyId)
+          .order('full_name');
 
       // --------------------------------------------------------
       // 4. GET TODAY'S ATTENDANCE
@@ -148,6 +169,15 @@ final employees = await supabase
 
       await _fetchLeaveRequests(companyIdString);
 
+      // --------------------------------------------------------
+      // 6. GET REPORT DATA
+      // --------------------------------------------------------
+
+      await _fetchReportData(
+        companyIdString,
+        employees.length,
+      );
+
       if (!mounted) return;
 
       setState(() {
@@ -179,6 +209,334 @@ final employees = await supabase
         _presentToday = 0;
       });
     }
+  }
+
+  // ============================================================
+  // FETCH REPORT DATA
+  // ============================================================
+
+  Future<void> _fetchReportData(
+    String companyId,
+    int employeeCount,
+  ) async {
+    if (mounted) {
+      setState(() {
+        _isReportsLoading = true;
+      });
+    }
+
+    try {
+      final supabase = Supabase.instance.client;
+
+      final year = _reportMonth.year;
+      final month = _reportMonth.month;
+
+      final startOfMonth = DateTime(
+        year,
+        month,
+        1,
+      );
+
+      final startOfNextMonth = DateTime(
+        year,
+        month + 1,
+        1,
+      );
+
+      // --------------------------------------------------------
+      // ATTENDANCE FOR CURRENT REPORT MONTH
+      // --------------------------------------------------------
+
+      final attendance = await supabase
+          .from('attendance')
+          .select(
+            '''
+            id,
+            employee_id,
+            punch_in,
+            punch_out,
+            company_id
+            ''',
+          )
+          .eq(
+            'company_id',
+            companyId,
+          )
+          .gte(
+            'punch_in',
+            startOfMonth
+                .toUtc()
+                .toIso8601String(),
+          )
+          .lt(
+            'punch_in',
+            startOfNextMonth
+                .toUtc()
+                .toIso8601String(),
+          )
+          .order(
+            'punch_in',
+            ascending: false,
+          );
+
+      int attendanceRecords = 0;
+      int completedShifts = 0;
+      int openShifts = 0;
+
+      double totalHours = 0;
+
+      for (final record in attendance) {
+        attendanceRecords++;
+
+        final punchInText =
+            record['punch_in']?.toString();
+
+        final punchOutText =
+            record['punch_out']?.toString();
+
+        if (punchInText == null ||
+            punchInText.isEmpty) {
+          continue;
+        }
+
+        try {
+          final punchIn =
+              DateTime.parse(punchInText).toLocal();
+
+          if (punchOutText != null &&
+              punchOutText.isNotEmpty) {
+            final punchOut =
+                DateTime.parse(
+              punchOutText,
+            ).toLocal();
+
+            if (punchOut.isAfter(punchIn)) {
+              completedShifts++;
+
+              final duration =
+                  punchOut.difference(punchIn);
+
+              totalHours +=
+                  duration.inMinutes / 60.0;
+            }
+          } else {
+            openShifts++;
+          }
+        } catch (_) {
+          // Ignore malformed attendance timestamps.
+        }
+      }
+
+      // --------------------------------------------------------
+      // LEAVE REQUESTS FOR REPORT MONTH
+      // --------------------------------------------------------
+
+      final leaveRequests = await supabase
+          .from('leave_requests')
+          .select(
+            '''
+            id,
+            employee_id,
+            start_date,
+            end_date,
+            status,
+            company_id
+            ''',
+          )
+          .eq(
+            'company_id',
+            companyId,
+          );
+
+      int monthlyLeaveCount = 0;
+
+      for (final leave in leaveRequests) {
+        final startDateText =
+            leave['start_date']?.toString();
+
+        final endDateText =
+            leave['end_date']?.toString();
+
+        if (startDateText == null ||
+            startDateText.isEmpty) {
+          continue;
+        }
+
+        try {
+          final leaveStart =
+              DateTime.parse(startDateText);
+
+          final leaveEnd = endDateText != null &&
+                  endDateText.isNotEmpty
+              ? DateTime.parse(endDateText)
+              : leaveStart;
+
+          final overlapsMonth =
+              !leaveEnd.isBefore(startOfMonth) &&
+                  !leaveStart.isAfter(
+                    startOfNextMonth.subtract(
+                      const Duration(days: 1),
+                    ),
+                  );
+
+          if (overlapsMonth) {
+            monthlyLeaveCount++;
+          }
+        } catch (_) {
+          // Ignore malformed leave dates.
+        }
+      }
+
+      // --------------------------------------------------------
+      // CALCULATE AVERAGE HOURS
+      // --------------------------------------------------------
+
+      double averageHours = 0;
+
+      if (completedShifts > 0) {
+        averageHours =
+            totalHours / completedShifts;
+      }
+
+      // --------------------------------------------------------
+      // CALCULATE ATTENDANCE COMPLETION
+      //
+      // This means:
+      // completed attendance records /
+      // all attendance records * 100
+      //
+      // It does NOT mean punctuality.
+      // --------------------------------------------------------
+
+      double completionPercentage = 0;
+
+      if (attendanceRecords > 0) {
+        completionPercentage =
+            (completedShifts /
+                    attendanceRecords) *
+                100;
+
+        if (completionPercentage > 100) {
+          completionPercentage = 100;
+        }
+      }
+
+      if (!mounted) return;
+
+      setState(() {
+        _monthlyAttendanceRecords =
+            attendanceRecords;
+
+        _monthlyCompletedShifts =
+            completedShifts;
+
+        _monthlyOpenShifts =
+            openShifts;
+
+        _monthlyLeaveRequests =
+            monthlyLeaveCount;
+
+        _averageDailyHours =
+            averageHours;
+
+        _attendanceCompletionPercentage =
+            completionPercentage;
+
+        _isReportsLoading = false;
+      });
+    } catch (e) {
+      debugPrint(
+        'Error loading report data: $e',
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        _monthlyAttendanceRecords = 0;
+        _monthlyCompletedShifts = 0;
+        _monthlyOpenShifts = 0;
+        _monthlyLeaveRequests = 0;
+        _averageDailyHours = 0;
+        _attendanceCompletionPercentage = 0;
+        _isReportsLoading = false;
+      });
+    }
+  }
+
+  // ============================================================
+  // CHANGE REPORT MONTH
+  // ============================================================
+
+  Future<void> _changeReportMonth(
+    int monthOffset,
+  ) async {
+    final newMonth = DateTime(
+      _reportMonth.year,
+      _reportMonth.month + monthOffset,
+    );
+
+    if (newMonth.isAfter(
+      DateTime(
+        DateTime.now().year,
+        DateTime.now().month,
+      ),
+    )) {
+      return;
+    }
+
+    setState(() {
+      _reportMonth = newMonth;
+    });
+
+    await _fetchReportData(
+      _companyId,
+      _employees.length,
+    );
+  }
+
+  // ============================================================
+  // FORMAT REPORT MONTH
+  // ============================================================
+
+  String _formatReportMonth() {
+    const months = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
+    ];
+
+    return '${months[_reportMonth.month - 1]} '
+        '${_reportMonth.year}';
+  }
+
+  // ============================================================
+  // FORMAT HOURS
+  // ============================================================
+
+  String _formatHours(double hours) {
+    if (hours <= 0) {
+      return '0h';
+    }
+
+    final wholeHours = hours.floor();
+
+    final minutes =
+        ((hours - wholeHours) * 60).round();
+
+    if (minutes == 0) {
+      return '${wholeHours}h';
+    }
+
+    return '${wholeHours}h ${minutes}m';
   }
 
   // ============================================================
@@ -222,34 +580,45 @@ final employees = await supabase
             ascending: false,
           );
 
-      final List<Map<String, String>> loadedRequests = [];
+      final List<Map<String, String>>
+          loadedRequests = [];
 
       for (final record in leaveRequests) {
         final employee =
-            record['employee'] as Map<String, dynamic>?;
+            record['employee']
+                as Map<String, dynamic>?;
 
         final startDate =
-            record['start_date']?.toString() ?? '';
+            record['start_date']?.toString() ??
+                '';
 
         final endDate =
-            record['end_date']?.toString() ?? '';
+            record['end_date']?.toString() ??
+                '';
 
         final rawStatus =
-            record['status']?.toString() ?? 'pending';
+            record['status']?.toString() ??
+                'pending';
 
         final status =
-            _formatLeaveStatus(rawStatus);
+            _formatLeaveStatus(
+          rawStatus,
+        );
 
         loadedRequests.add({
-          'id': record['id']?.toString() ?? '',
+          'id':
+              record['id']?.toString() ?? '',
           'employeeName':
-              employee?['full_name']?.toString() ??
+              employee?['full_name']
+                      ?.toString() ??
                   'Unknown Employee',
           'code':
-              employee?['employee_code']?.toString() ??
+              employee?['employee_code']
+                      ?.toString() ??
                   '---',
           'type':
-              record['leave_type']?.toString() ??
+              record['leave_type']
+                      ?.toString() ??
                   'Leave',
           'dates': _formatLeaveDates(
             startDate,
@@ -260,7 +629,9 @@ final employees = await supabase
                   'No reason provided',
           'status': status,
           'adminNote':
-              record['admin_note']?.toString() ?? '',
+              record['admin_note']
+                      ?.toString() ??
+                  '',
         });
       }
 
@@ -293,9 +664,8 @@ final employees = await supabase
     }
 
     try {
-      final start = DateTime.parse(
-        startDate,
-      );
+      final start =
+          DateTime.parse(startDate);
 
       final end = DateTime.parse(
         endDate.isEmpty
@@ -366,7 +736,8 @@ final employees = await supabase
     Map<String, String> request,
     String decision,
   ) async {
-    final result = await showDialog<String>(
+    final result =
+        await showDialog<String>(
       context: context,
       barrierDismissible: false,
       builder: (_) {
@@ -375,11 +746,9 @@ final employees = await supabase
               request['employeeName'] ??
                   'Employee',
           leaveType:
-              request['type'] ??
-                  'Leave',
+              request['type'] ?? 'Leave',
           dates:
-              request['dates'] ??
-                  '',
+              request['dates'] ?? '',
           decision: decision,
         );
       },
@@ -418,13 +787,6 @@ final employees = await supabase
         );
       }
 
-      // Convert UI value:
-      //
-      // Approved -> approved
-      // Rejected -> rejected
-      //
-      // This matches the database status format.
-
       final databaseStatus =
           status.toLowerCase();
 
@@ -432,13 +794,15 @@ final employees = await supabase
           .from('leave_requests')
           .update({
         'status': databaseStatus,
-        'admin_note': adminNote.isEmpty
-            ? null
-            : adminNote,
+        'admin_note':
+            adminNote.isEmpty
+                ? null
+                : adminNote,
         'reviewed_by': user.id,
-        'reviewed_at': DateTime.now()
-            .toUtc()
-            .toIso8601String(),
+        'reviewed_at':
+            DateTime.now()
+                .toUtc()
+                .toIso8601String(),
       })
           .eq(
             'id',
@@ -449,9 +813,13 @@ final employees = await supabase
             _companyId,
           );
 
-      // Reload the real data from Supabase.
       await _fetchLeaveRequests(
         _companyId,
+      );
+
+      await _fetchReportData(
+        _companyId,
+        _employees.length,
       );
 
       if (!mounted) return;
@@ -518,7 +886,6 @@ final employees = await supabase
     return Scaffold(
       backgroundColor:
           const Color(0xFFF8FAFC),
-
       body: SafeArea(
         child: _isLoading
             ? const Center(
@@ -537,17 +904,14 @@ final employees = await supabase
                     ],
                   ),
       ),
-
       bottomNavigationBar:
           FloatingPillNavBar(
         currentIndex: _currentIndex,
-
         onTap: (index) {
           setState(() {
             _currentIndex = index;
           });
         },
-
         items: const [
           FloatingNavItem(
             icon:
@@ -600,9 +964,7 @@ final employees = await supabase
               color: Colors.red,
               size: 55,
             ),
-
             const SizedBox(height: 16),
-
             const Text(
               'Unable to load admin data',
               style: TextStyle(
@@ -611,9 +973,7 @@ final employees = await supabase
                     FontWeight.bold,
               ),
             ),
-
             const SizedBox(height: 10),
-
             Text(
               _errorMessage ??
                   'Unknown error',
@@ -624,9 +984,7 @@ final employees = await supabase
                     Colors.grey.shade700,
               ),
             ),
-
             const SizedBox(height: 20),
-
             ElevatedButton(
               onPressed:
                   _fetchAdminData,
@@ -670,9 +1028,7 @@ final employees = await supabase
           searchHint:
               'Search admin metrics...',
         ),
-
         const SizedBox(height: 20),
-
         Row(
           children: [
             _buildMetricCard(
@@ -681,18 +1037,14 @@ final employees = await supabase
               Icons.group,
               Colors.blue,
             ),
-
             const SizedBox(width: 12),
-
             _buildMetricCard(
               'Present Today',
               '$_presentToday',
               Icons.how_to_reg,
               Colors.green,
             ),
-
             const SizedBox(width: 12),
-
             _buildMetricCard(
               'Pending Leave',
               '$pendingCount',
@@ -701,9 +1053,7 @@ final employees = await supabase
             ),
           ],
         ),
-
         const SizedBox(height: 24),
-
         const Text(
           'Pending Approvals',
           style: TextStyle(
@@ -712,9 +1062,7 @@ final employees = await supabase
                 FontWeight.bold,
           ),
         ),
-
         const SizedBox(height: 12),
-
         if (pendingCount == 0)
           const Card(
             child: Padding(
@@ -743,8 +1091,9 @@ final employees = await supabase
                   shape:
                       RoundedRectangleBorder(
                     borderRadius:
-                        BorderRadius
-                            .circular(12),
+                        BorderRadius.circular(
+                      12,
+                    ),
                   ),
                   child: ListTile(
                     title: Text(
@@ -767,8 +1116,7 @@ final employees = await supabase
                         IconButton(
                           icon:
                               const Icon(
-                            Icons
-                                .check_circle,
+                            Icons.check_circle,
                             color:
                                 Colors.green,
                           ),
@@ -848,9 +1196,7 @@ final employees = await supabase
             });
           },
         ),
-
         const SizedBox(height: 24),
-
         if (filtered.isEmpty)
           const Padding(
             padding:
@@ -921,11 +1267,9 @@ final employees = await supabase
                           ),
                         ),
                       ),
-
                       const SizedBox(
                         width: 14,
                       ),
-
                       Expanded(
                         child: Column(
                           crossAxisAlignment:
@@ -941,11 +1285,9 @@ final employees = await supabase
                                 fontSize: 16,
                               ),
                             ),
-
                             const SizedBox(
                               height: 2,
                             ),
-
                             Text(
                               employeeCode
                                   .toString(),
@@ -957,11 +1299,9 @@ final employees = await supabase
                                 fontSize: 13,
                               ),
                             ),
-
                             const SizedBox(
                               height: 4,
                             ),
-
                             Container(
                               padding:
                                   const EdgeInsets
@@ -998,12 +1338,10 @@ final employees = await supabase
                           ],
                         ),
                       ),
-
                       IconButton(
                         icon:
                             const Icon(
-                          Icons
-                              .arrow_forward_ios,
+                          Icons.arrow_forward_ios,
                           size: 16,
                           color:
                               Colors.grey,
@@ -1080,9 +1418,7 @@ final employees = await supabase
             });
           },
         ),
-
         const SizedBox(height: 20),
-
         if (filtered.isEmpty)
           const Padding(
             padding:
@@ -1117,10 +1453,6 @@ final employees = await supabase
                       CrossAxisAlignment
                           .start,
                   children: [
-                    // ------------------------------------------------
-                    // EMPLOYEE + STATUS
-                    // ------------------------------------------------
-
                     Row(
                       crossAxisAlignment:
                           CrossAxisAlignment
@@ -1149,11 +1481,9 @@ final employees = await supabase
                             ),
                           ),
                         ),
-
                         const SizedBox(
                           width: 12,
                         ),
-
                         Expanded(
                           child: Column(
                             crossAxisAlignment:
@@ -1170,11 +1500,9 @@ final employees = await supabase
                                   fontSize: 16,
                                 ),
                               ),
-
                               const SizedBox(
                                 height: 2,
                               ),
-
                               Text(
                                 req['code'] ??
                                     '---',
@@ -1189,22 +1517,15 @@ final employees = await supabase
                             ],
                           ),
                         ),
-
                         _buildLeaveStatusChip(
                           req['status'] ??
                               'Pending',
                         ),
                       ],
                     ),
-
                     const SizedBox(
                       height: 14,
                     ),
-
-                    // ------------------------------------------------
-                    // LEAVE TYPE
-                    // ------------------------------------------------
-
                     Text(
                       req['type'] ??
                           'Leave',
@@ -1217,15 +1538,9 @@ final employees = await supabase
                         fontSize: 15,
                       ),
                     ),
-
                     const SizedBox(
                       height: 6,
                     ),
-
-                    // ------------------------------------------------
-                    // DATES
-                    // ------------------------------------------------
-
                     Row(
                       children: [
                         Icon(
@@ -1236,11 +1551,9 @@ final employees = await supabase
                               .grey
                               .shade600,
                         ),
-
                         const SizedBox(
                           width: 7,
                         ),
-
                         Expanded(
                           child: Text(
                             req['dates'] ??
@@ -1255,15 +1568,9 @@ final employees = await supabase
                         ),
                       ],
                     ),
-
                     const SizedBox(
                       height: 8,
                     ),
-
-                    // ------------------------------------------------
-                    // REASON
-                    // ------------------------------------------------
-
                     Text(
                       'Reason:',
                       style:
@@ -1275,11 +1582,9 @@ final employees = await supabase
                             .shade800,
                       ),
                     ),
-
                     const SizedBox(
                       height: 3,
                     ),
-
                     Text(
                       req['reason'] ??
                           'No reason provided',
@@ -1290,18 +1595,12 @@ final employees = await supabase
                             .shade700,
                       ),
                     ),
-
-                    // ------------------------------------------------
-                    // ADMIN NOTE
-                    // ------------------------------------------------
-
                     if ((req['adminNote'] ??
                             '')
                         .isNotEmpty) ...[
                       const SizedBox(
                         height: 12,
                       ),
-
                       Container(
                         width:
                             double.infinity,
@@ -1331,17 +1630,11 @@ final employees = await supabase
                         ),
                       ),
                     ],
-
-                    // ------------------------------------------------
-                    // APPROVE / REJECT
-                    // ------------------------------------------------
-
                     if (req['status'] ==
                         'Pending') ...[
                       const SizedBox(
                         height: 14,
                       ),
-
                       Row(
                         children: [
                           Expanded(
@@ -1385,11 +1678,9 @@ final employees = await supabase
                               ),
                             ),
                           ),
-
                           const SizedBox(
                             width: 12,
                           ),
-
                           Expanded(
                             child:
                                 ElevatedButton
@@ -1504,6 +1795,12 @@ final employees = await supabase
   // ============================================================
 
   Widget _buildReportsTab() {
+    final isCurrentMonth =
+        _reportMonth.year ==
+                DateTime.now().year &&
+            _reportMonth.month ==
+                DateTime.now().month;
+
     return ListView(
       padding:
           const EdgeInsets.all(16),
@@ -1511,29 +1808,32 @@ final employees = await supabase
         CustomSearchHeader(
           title: 'Reports',
           subtitle:
-              'Attendance & Analytics Summary',
+              'Real attendance & leave analytics',
           titleIcon:
               Icons.bar_chart,
           secondaryTabTitle:
-              'Download',
+              'Refresh',
           secondaryTabIcon:
-              Icons.picture_as_pdf,
-          onSecondaryTabTap: () {
-            ScaffoldMessenger.of(
-                    context)
-                .showSnackBar(
-              const SnackBar(
-                content: Text(
-                  'Report download will be connected to database reports.',
-                ),
-              ),
-            );
-          },
+              Icons.refresh,
+          onSecondaryTabTap:
+              _isReportsLoading
+                  ? null
+                  : () async {
+                      await _fetchReportData(
+                        _companyId,
+                        _employees.length,
+                      );
+                    },
         ),
 
         const SizedBox(height: 20),
 
+        // --------------------------------------------------------
+        // MONTH SELECTOR
+        // --------------------------------------------------------
+
         Card(
+          elevation: 0,
           shape:
               RoundedRectangleBorder(
             borderRadius:
@@ -1543,51 +1843,83 @@ final employees = await supabase
           ),
           child: Padding(
             padding:
-                const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment
-                      .start,
+                const EdgeInsets.symmetric(
+              horizontal: 14,
+              vertical: 12,
+            ),
+            child: Row(
               children: [
-                const Text(
-                  'Monthly Attendance Overview',
-                  style: TextStyle(
-                    fontSize: 17,
-                    fontWeight:
-                        FontWeight.bold,
-                  ),
+                Icon(
+                  Icons.calendar_month,
+                  color:
+                      Colors.blue.shade700,
                 ),
 
                 const SizedBox(
-                  height: 16,
+                  width: 10,
                 ),
 
-                ClipRRect(
-                  borderRadius:
-                      BorderRadius.circular(
-                    10,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment:
+                        CrossAxisAlignment
+                            .start,
+                    children: [
+                      const Text(
+                        'Report Period',
+                        style:
+                            TextStyle(
+                          fontSize: 12,
+                          color:
+                              Colors.grey,
+                        ),
+                      ),
+                      const SizedBox(
+                        height: 2,
+                      ),
+                      Text(
+                        _formatReportMonth(),
+                        style:
+                            const TextStyle(
+                          fontWeight:
+                              FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
                   ),
-                  child:
-                      LinearProgressIndicator(
-                    value: 0,
-                    minHeight: 12,
-                    backgroundColor:
-                        Colors.grey
-                            .shade200,
+                ),
+
+                IconButton(
+                  tooltip:
+                      'Previous month',
+                  onPressed:
+                      _isReportsLoading
+                          ? null
+                          : () =>
+                              _changeReportMonth(
+                                -1,
+                              ),
+                  icon:
+                      const Icon(
+                    Icons.chevron_left,
                   ),
                 ),
 
-                const SizedBox(
-                  height: 8,
-                ),
-
-                const Text(
-                  'Database reports coming next',
-                  style: TextStyle(
-                    fontWeight:
-                        FontWeight.bold,
-                    color:
-                        Color(0xFF2E66F6),
+                IconButton(
+                  tooltip:
+                      'Next month',
+                  onPressed:
+                      _isReportsLoading ||
+                              isCurrentMonth
+                          ? null
+                          : () =>
+                              _changeReportMonth(
+                                1,
+                              ),
+                  icon:
+                      const Icon(
+                    Icons.chevron_right,
                   ),
                 ),
               ],
@@ -1597,56 +1929,383 @@ final employees = await supabase
 
         const SizedBox(height: 16),
 
-        Row(
-          children: [
-            _buildReportSummaryCard(
-              'On-Time Arrival',
-              '--',
-              Icons.thumb_up,
-              Colors.green,
-            ),
-
-            const SizedBox(
-              width: 12,
-            ),
-
-            _buildReportSummaryCard(
-              'Avg Daily Hrs',
-              '--',
-              Icons.access_time,
-              Colors.indigo,
-            ),
-          ],
-        ),
-
-        const SizedBox(height: 20),
-
-        Card(
-          shape:
-              RoundedRectangleBorder(
-            borderRadius:
-                BorderRadius.circular(
-              16,
-            ),
-          ),
-          child: const Padding(
+        if (_isReportsLoading)
+          const Padding(
             padding:
-                EdgeInsets.all(20),
+                EdgeInsets.symmetric(
+              vertical: 30,
+            ),
             child: Center(
-              child: Text(
-                'Reports will use real attendance data from Supabase.',
-                textAlign:
-                    TextAlign.center,
-                style: TextStyle(
-                  color:
-                      Colors.grey,
-                ),
+              child:
+                  CircularProgressIndicator(),
+            ),
+          )
+        else ...[
+          // ------------------------------------------------------
+          // MAIN ATTENDANCE CARD
+          // ------------------------------------------------------
+
+          Card(
+            shape:
+                RoundedRectangleBorder(
+              borderRadius:
+                  BorderRadius.circular(
+                16,
+              ),
+            ),
+            child: Padding(
+              padding:
+                  const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment:
+                    CrossAxisAlignment
+                        .start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding:
+                            const EdgeInsets
+                                .all(10),
+                        decoration:
+                            BoxDecoration(
+                          color: Colors
+                              .blue
+                              .shade50,
+                          borderRadius:
+                              BorderRadius
+                                  .circular(
+                            12,
+                          ),
+                        ),
+                        child:
+                            const Icon(
+                          Icons
+                              .analytics_outlined,
+                          color:
+                              Color(
+                            0xFF2E66F6,
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(
+                        width: 12,
+                      ),
+
+                      const Expanded(
+                        child: Text(
+                          'Monthly Attendance Overview',
+                          style:
+                              TextStyle(
+                            fontSize: 17,
+                            fontWeight:
+                                FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(
+                    height: 24,
+                  ),
+
+                  Text(
+                    '${_attendanceCompletionPercentage.toStringAsFixed(1)}%',
+                    style:
+                        const TextStyle(
+                      fontSize: 32,
+                      fontWeight:
+                          FontWeight.bold,
+                    ),
+                  ),
+
+                  const SizedBox(
+                    height: 6,
+                  ),
+
+                  Text(
+                    'Attendance completion',
+                    style:
+                        TextStyle(
+                      color: Colors
+                          .grey
+                          .shade600,
+                    ),
+                  ),
+
+                  const SizedBox(
+                    height: 14,
+                  ),
+
+                  ClipRRect(
+                    borderRadius:
+                        BorderRadius.circular(
+                      10,
+                    ),
+                    child:
+                        LinearProgressIndicator(
+                      value:
+                          (_attendanceCompletionPercentage /
+                                  100)
+                              .clamp(
+                        0.0,
+                        1.0,
+                      ),
+                      minHeight: 12,
+                      backgroundColor:
+                          Colors
+                              .grey
+                              .shade200,
+                    ),
+                  ),
+
+                  const SizedBox(
+                    height: 12,
+                  ),
+
+                  Text(
+                    'Completed $_monthlyCompletedShifts of '
+                    '$_monthlyAttendanceRecords attendance records',
+                    style:
+                        TextStyle(
+                      color: Colors
+                          .grey
+                          .shade700,
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
-        ),
+
+          const SizedBox(
+            height: 16,
+          ),
+
+          // ------------------------------------------------------
+          // REPORT SUMMARY CARDS
+          // ------------------------------------------------------
+
+          Row(
+            children: [
+              _buildReportSummaryCard(
+                'Attendance Records',
+                '$_monthlyAttendanceRecords',
+                Icons.fact_check_outlined,
+                Colors.blue,
+              ),
+
+              const SizedBox(
+                width: 12,
+              ),
+
+              _buildReportSummaryCard(
+                'Completed Shifts',
+                '$_monthlyCompletedShifts',
+                Icons.task_alt,
+                Colors.green,
+              ),
+            ],
+          ),
+
+          const SizedBox(
+            height: 12,
+          ),
+
+          Row(
+            children: [
+              _buildReportSummaryCard(
+                'Avg Working Time',
+                _formatHours(
+                  _averageDailyHours,
+                ),
+                Icons.access_time,
+                Colors.indigo,
+              ),
+
+              const SizedBox(
+                width: 12,
+              ),
+
+              _buildReportSummaryCard(
+                'Leave Requests',
+                '$_monthlyLeaveRequests',
+                Icons.event_note,
+                Colors.orange,
+              ),
+            ],
+          ),
+
+          const SizedBox(
+            height: 12,
+          ),
+
+          // ------------------------------------------------------
+          // OPEN SHIFT CARD
+          // ------------------------------------------------------
+
+          Card(
+            shape:
+                RoundedRectangleBorder(
+              borderRadius:
+                  BorderRadius.circular(
+                16,
+              ),
+            ),
+            child: Padding(
+              padding:
+                  const EdgeInsets.all(18),
+              child: Row(
+                children: [
+                  Container(
+                    padding:
+                        const EdgeInsets
+                            .all(10),
+                    decoration:
+                        BoxDecoration(
+                      color: Colors
+                          .orange
+                          .shade50,
+                      borderRadius:
+                          BorderRadius
+                              .circular(
+                        12,
+                      ),
+                    ),
+                    child:
+                        Icon(
+                      Icons
+                          .pending_actions,
+                      color: Colors
+                          .orange
+                          .shade700,
+                    ),
+                  ),
+
+                  const SizedBox(
+                    width: 12,
+                  ),
+
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment:
+                          CrossAxisAlignment
+                              .start,
+                      children: [
+                        const Text(
+                          'Open Attendance Records',
+                          style:
+                              TextStyle(
+                            fontWeight:
+                                FontWeight.bold,
+                            fontSize: 15,
+                          ),
+                        ),
+                        const SizedBox(
+                          height: 4,
+                        ),
+                        Text(
+                          '$_monthlyOpenShifts employee attendance record(s) '
+                          'do not have a check-out time yet.',
+                          style:
+                              TextStyle(
+                            color: Colors
+                                .grey
+                                .shade700,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          const SizedBox(
+            height: 16,
+          ),
+
+          // ------------------------------------------------------
+          // REPORT INFORMATION
+          // ------------------------------------------------------
+
+          Card(
+            shape:
+                RoundedRectangleBorder(
+              borderRadius:
+                  BorderRadius.circular(
+                16,
+              ),
+            ),
+            child: Padding(
+              padding:
+                  const EdgeInsets.all(20),
+              child: Column(
+                children: [
+                  Icon(
+                    Icons
+                        .info_outline,
+                    color:
+                        Colors.grey.shade600,
+                    size: 30,
+                  ),
+
+                  const SizedBox(
+                    height: 10,
+                  ),
+
+                  const Text(
+                    'How these reports are calculated',
+                    style:
+                        TextStyle(
+                      fontWeight:
+                          FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                    textAlign:
+                        TextAlign.center,
+                  ),
+
+                  const SizedBox(
+                    height: 8,
+                  ),
+
+                  Text(
+                    'Attendance Records = check-in records '
+                    'created during the selected month.\n\n'
+                    'Completed Shifts = records containing '
+                    'both check-in and check-out times.\n\n'
+                    'Average Working Time = average duration '
+                    'of completed shifts.\n\n'
+                    'Attendance Completion = completed shifts '
+                    'divided by total attendance records.',
+                    textAlign:
+                        TextAlign.center,
+                    style:
+                        TextStyle(
+                      color: Colors
+                          .grey
+                          .shade700,
+                      height: 1.5,
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
 
         const SizedBox(height: 20),
+
+        // --------------------------------------------------------
+        // LOGOUT
+        // --------------------------------------------------------
 
         ElevatedButton.icon(
           onPressed: _logout,
@@ -1673,6 +2332,10 @@ final employees = await supabase
               ),
             ),
           ),
+        ),
+
+        const SizedBox(
+          height: 20,
         ),
       ],
     );
@@ -1734,9 +2397,7 @@ final employees = await supabase
                   ),
                 ),
               ),
-
               const SizedBox(height: 12),
-
               Text(
                 name.toString(),
                 style:
@@ -1746,7 +2407,6 @@ final employees = await supabase
                       FontWeight.bold,
                 ),
               ),
-
               Text(
                 'Employee Code: $code',
                 style: TextStyle(
@@ -1754,9 +2414,7 @@ final employees = await supabase
                       Colors.grey.shade600,
                 ),
               ),
-
               const SizedBox(height: 20),
-
               ListTile(
                 leading:
                     const Icon(
@@ -1771,7 +2429,6 @@ final employees = await supabase
                   code.toString(),
                 ),
               ),
-
               ListTile(
                 leading:
                     const Icon(
@@ -1786,9 +2443,7 @@ final employees = await supabase
                   _companyName,
                 ),
               ),
-
               const SizedBox(height: 16),
-
               ElevatedButton(
                 onPressed: () =>
                     Navigator.pop(
@@ -1858,9 +2513,7 @@ final employees = await supabase
               color: color,
               size: 24,
             ),
-
             const SizedBox(height: 8),
-
             Text(
               value,
               style:
@@ -1870,9 +2523,7 @@ final employees = await supabase
                 fontSize: 18,
               ),
             ),
-
             const SizedBox(height: 2),
-
             Text(
               title,
               style: TextStyle(
@@ -1928,11 +2579,9 @@ final employees = await supabase
               color: color,
               size: 28,
             ),
-
             const SizedBox(
               width: 12,
             ),
-
             Expanded(
               child: Column(
                 crossAxisAlignment:
@@ -1948,7 +2597,6 @@ final employees = await supabase
                           FontWeight.bold,
                     ),
                   ),
-
                   Text(
                     title,
                     style: TextStyle(
@@ -1970,12 +2618,6 @@ final employees = await supabase
 
 // ==================================================================
 // LEAVE DECISION DIALOG
-//
-// IMPORTANT:
-// This class is OUTSIDE _AdminMainScreenState.
-// It owns its own TextEditingController.
-// This fixes:
-// "A TextEditingController was used after being disposed."
 // ==================================================================
 
 class _LeaveDecisionDialog
@@ -2030,7 +2672,6 @@ class _LeaveDecisionDialogState
             ? 'Approve Leave'
             : 'Reject Leave',
       ),
-
       content:
           SingleChildScrollView(
         child: Column(
@@ -2049,11 +2690,9 @@ class _LeaveDecisionDialogState
                     FontWeight.bold,
               ),
             ),
-
             const SizedBox(
               height: 5,
             ),
-
             Text(
               widget.leaveType,
               style:
@@ -2064,11 +2703,9 @@ class _LeaveDecisionDialogState
                     FontWeight.w600,
               ),
             ),
-
             const SizedBox(
               height: 4,
             ),
-
             Text(
               widget.dates,
               style: TextStyle(
@@ -2076,11 +2713,9 @@ class _LeaveDecisionDialogState
                     Colors.grey.shade700,
               ),
             ),
-
             const SizedBox(
               height: 18,
             ),
-
             TextField(
               controller:
                   _noteController,
@@ -2107,7 +2742,6 @@ class _LeaveDecisionDialogState
           ],
         ),
       ),
-
       actions: [
         TextButton(
           onPressed: () {
@@ -2120,7 +2754,6 @@ class _LeaveDecisionDialogState
             'Cancel',
           ),
         ),
-
         ElevatedButton(
           onPressed: () {
             Navigator.of(
