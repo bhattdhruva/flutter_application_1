@@ -1,476 +1,519 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Reset Password - Attendance App</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reset Password - Attendance App</title>
 
-    <!-- Google Fonts: Inter -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-    <style>
-        /* Baseline CSS & Design System */
-        :root {
-            --primary: #0066FF;
-            --primary-hover: #0052CC;
-            --primary-active: #003D99;
-            --primary-light: #EFF6FF;
-            --bg-gradient: linear-gradient(135deg, #F8FAFC 0%, #E2E8F0 100%);
-            --card-bg: #FFFFFF;
-            --text-main: #0F172A;
-            --text-muted: #64748B;
-            --border-color: #E2E8F0;
-            --error-bg: #FEF2F2;
-            --error-border: #FCA5A5;
-            --error-text: #991B1B;
-            --error-subtext: #B91C1C;
-            --shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
-            --radius-card: 24px;
-            --radius-btn: 14px;
-            --radius-icon: 20px;
-        }
+  <style>
+    /* Baseline CSS & Design System */
+    :root {
+      --primary: #0066FF;
+      --primary-hover: #0052CC;
+      --primary-active: #003D99;
+      --primary-light: #EFF6FF;
+      --bg-gradient: linear-gradient(135deg, #F8FAFC 0%, #E2E8F0 100%);
+      --card-bg: #FFFFFF;
+      --text-main: #0F172A;
+      --text-muted: #64748B;
+      --border-color: #E2E8F0;
+      --error-bg: #FEF2F2;
+      --error-border: #FCA5A5;
+      --error-text: #991B1B;
+      --error-subtext: #B91C1C;
+      --shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+      --radius-card: 24px;
+      --radius-btn: 14px;
+      --radius-icon: 20px;
+    }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-        body {
-            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: var(--bg-gradient);
-            color: var(--text-main);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            line-height: 1.5;
-            -webkit-font-smoothing: antialiased;
-        }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg-gradient);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
 
-        /* Container Card */
-        .container {
-            background: var(--card-bg);
-            width: 100%;
-            max-width: 440px;
-            border-radius: var(--radius-card);
-            box-shadow: var(--shadow);
-            padding: 40px 32px;
-            text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.8);
-            position: relative;
-            overflow: hidden;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
+    /* Container Card */
+    .container {
+      background: var(--card-bg);
+      width: 100%;
+      max-width: 440px;
+      border-radius: var(--radius-card);
+      box-shadow: var(--shadow);
+      padding: 40px 32px;
+      text-align: center;
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
 
-        /* Header Brand Badge */
-        .brand {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 13px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-            color: var(--primary);
-            background: var(--primary-light);
-            padding: 6px 14px;
-            border-radius: 20px;
-            margin-bottom: 28px;
-        }
+    /* Header Brand Badge */
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--primary);
+      background: var(--primary-light);
+      padding: 6px 14px;
+      border-radius: 20px;
+      margin-bottom: 28px;
+    }
 
-        /* Lock Icon Container */
-        .icon-wrapper {
-            width: 80px;
-            height: 80px;
-            border-radius: var(--radius-icon);
-            background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 24px auto;
-            color: var(--primary);
-            box-shadow: 0 8px 16px -4px rgba(0, 102, 255, 0.15);
-            position: relative;
-        }
+    /* Lock Icon Container */
+    .icon-wrapper {
+      width: 80px;
+      height: 80px;
+      border-radius: var(--radius-icon);
+      background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 24px auto;
+      color: var(--primary);
+      box-shadow: 0 8px 16px -4px rgba(0, 102, 255, 0.15);
+      position: relative;
+    }
 
-        .icon-wrapper svg {
-            width: 40px;
-            height: 40px;
-        }
+    .icon-wrapper svg {
+      width: 40px;
+      height: 40px;
+    }
 
-        /* Typography */
-        h1 {
-            font-size: 24px;
-            font-weight: 700;
-            color: var(--text-main);
-            margin-bottom: 12px;
-            letter-spacing: -0.4px;
-        }
+    /* Typography */
+    h1 {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 12px;
+      letter-spacing: -0.4px;
+    }
 
-        p.description {
-            font-size: 15px;
-            color: var(--text-muted);
-            margin-bottom: 32px;
-            line-height: 1.6;
-        }
+    p.description {
+      font-size: 15px;
+      color: var(--text-muted);
+      margin-bottom: 32px;
+      line-height: 1.6;
+    }
 
-        /* Primary Action Button */
-        .btn-primary {
-            width: 100%;
-            height: 52px;
-            background-color: var(--primary);
-            color: #FFFFFF;
-            border: none;
-            border-radius: var(--radius-btn);
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            text-decoration: none;
-            transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
-            box-shadow: 0 10px 15px -3px rgba(0, 102, 255, 0.3);
-            -webkit-tap-highlight-color: transparent;
-        }
+    /* Primary Action Button */
+    .btn-primary {
+      width: 100%;
+      height: 52px;
+      background-color: var(--primary);
+      color: #FFFFFF;
+      border: none;
+      border-radius: var(--radius-btn);
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      text-decoration: none;
+      transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+      box-shadow: 0 10px 15px -3px rgba(0, 102, 255, 0.3);
+      -webkit-tap-highlight-color: transparent;
+    }
 
-        .btn-primary:hover:not(:disabled) {
-            background-color: var(--primary-hover);
-            box-shadow: 0 12px 20px -3px rgba(0, 102, 255, 0.4);
-        }
+    .btn-primary:hover:not(:disabled) {
+      background-color: var(--primary-hover);
+      box-shadow: 0 12px 20px -3px rgba(0, 102, 255, 0.4);
+    }
 
-        .btn-primary:active:not(:disabled) {
-            background-color: var(--primary-active);
-            transform: scale(0.98);
-        }
+    .btn-primary:active:not(:disabled) {
+      background-color: var(--primary-active);
+      transform: scale(0.98);
+    }
 
-        .btn-primary:disabled {
-            background-color: #94A3B8;
-            cursor: not-allowed;
-            box-shadow: none;
-            opacity: 0.85;
-        }
+    .btn-primary:disabled {
+      background-color: #94A3B8;
+      cursor: not-allowed;
+      box-shadow: none;
+      opacity: 0.85;
+    }
 
-        /* Loading Spinner */
-        .spinner {
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top-color: #FFFFFF;
-            animation: spin 0.8s linear infinite;
-        }
+    /* Loading Spinner */
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: #FFFFFF;
+      animation: spin 0.8s linear infinite;
+    }
 
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
 
-        /* Secondary Helper Link */
-        .helper-text {
-            margin-top: 20px;
-            font-size: 13px;
-            color: var(--text-muted);
-        }
+    /* Secondary Helper Link */
+    .helper-text {
+      margin-top: 20px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
 
-        .helper-text a {
-            color: var(--primary);
-            text-decoration: none;
-            font-weight: 600;
-        }
+    .helper-text a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+    }
 
-        .helper-text a:hover {
-            text-decoration: underline;
-        }
+    .helper-text a:hover {
+      text-decoration: underline;
+    }
 
-        /* Error Alert State */
-        .error-card {
-            display: none;
-            background-color: var(--error-bg);
-            border: 1px solid var(--error-border);
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 24px;
-            text-align: left;
-        }
+    /* Error Alert State */
+    .error-card {
+      display: none;
+      background-color: var(--error-bg);
+      border: 1px solid var(--error-border);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 24px;
+      text-align: left;
+    }
 
-        .error-card-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: var(--error-text);
-            font-weight: 700;
-            font-size: 15px;
-            margin-bottom: 6px;
-        }
+    .error-card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--error-text);
+      font-weight: 700;
+      font-size: 15px;
+      margin-bottom: 6px;
+    }
 
-        .error-card-header svg {
-            width: 20px;
-            height: 20px;
-            flex-shrink: 0;
-        }
+    .error-card-header svg {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+    }
 
-        .error-card-body {
-            font-size: 13.5px;
-            color: var(--error-subtext);
-            line-height: 1.5;
-        }
+    .error-card-body {
+      font-size: 13.5px;
+      color: var(--error-subtext);
+      line-height: 1.5;
+    }
 
-        /* Footer Note */
-        .footer-note {
-            margin-top: 32px;
-            font-size: 12px;
-            color: #94A3B8;
-            border-top: 1px solid var(--border-color);
-            padding-top: 20px;
-        }
+    /* Footer Note */
+    .footer-note {
+      margin-top: 32px;
+      font-size: 12px;
+      color: #94A3B8;
+      border-top: 1px solid var(--border-color);
+      padding-top: 20px;
+    }
 
-        /* Mobile Responsive adjustments */
-        @media (max-width: 480px) {
-            .container {
-                padding: 32px 24px;
-                border-radius: 20px;
-            }
+    /* Mobile Responsive adjustments */
+    @media (max-width: 480px) {
+      .container {
+        padding: 32px 24px;
+        border-radius: 20px;
+      }
 
-            h1 {
-                font-size: 22px;
-            }
+      h1 {
+        font-size: 22px;
+      }
 
-            p.description {
-                font-size: 14px;
-            }
-        }
-    </style>
+      p.description {
+        font-size: 14px;
+      }
+    }
+  </style>
 </head>
-
 <body>
 
-    <main class="container" role="main">
-        <!-- Application Brand -->
-        <div class="brand">
-            <span>Attendance App</span>
-        </div>
+  <main class="container" role="main">
+    <!-- Application Brand -->
+    <div class="brand">
+      <span>Attendance App</span>
+    </div>
 
-        <!-- Lock Icon Graphic -->
-        <div class="icon-wrapper" id="iconWrapper">
-            <svg id="mainIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-            </svg>
-        </div>
+    <!-- Lock Icon Graphic -->
+    <div class="icon-wrapper" id="iconWrapper">
+      <svg id="mainIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+      </svg>
+    </div>
 
-        <!-- Error Alert Card (Displayed if recovery parameters are missing or invalid) -->
-        <div class="error-card" id="errorCard" role="alert">
-            <div class="error-card-header">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <line x1="12" y1="8" x2="12" y2="12"></line>
-                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                </svg>
-                <span id="errorTitle">Invalid Recovery Link</span>
-            </div>
-            <div class="error-card-body" id="errorMessage">
-                The password reset link is missing required parameters or has expired. Please request a new password
-                reset link from the Attendance App.
-            </div>
-        </div>
+    <!-- Error Alert Card (Displayed if recovery parameters are missing or invalid) -->
+    <div class="error-card" id="errorCard" role="alert">
+      <div class="error-card-header">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <span id="errorTitle">Invalid Recovery Link</span>
+      </div>
+      <div class="error-card-body" id="errorMessage">
+        The password reset link is missing required parameters or has expired. Please request a new password reset link from the Attendance App.
+      </div>
+    </div>
 
-        <!-- Content Section -->
-        <div id="contentSection">
-            <h1 id="pageTitle">Reset Your Password</h1>
-            <p class="description" id="pageDescription">
-                Your password reset request is ready. Click the button below to open the Attendance App and create your
-                new password.
-            </p>
+    <!-- Content Section -->
+    <div id="contentSection">
+      <h1 id="pageTitle">Reset Your Password</h1>
+      <p class="description" id="pageDescription">
+        Your password reset request is ready. Click the button below to open the Attendance App and create your new password.
+      </p>
 
-            <!-- Primary Button -->
-            <button class="btn-primary" id="openAppBtn" type="button" aria-label="Open Attendance App">
-                <span id="btnText">Open Attendance App</span>
-                <span id="btnSpinner" class="spinner" style="display: none;" aria-hidden="true"></span>
-            </button>
+      <!-- Primary Button -->
+      <button class="btn-primary" id="openAppBtn" type="button" aria-label="Open Attendance App">
+        <span id="btnText">Open Attendance App</span>
+        <span id="btnSpinner" class="spinner" style="display: none;" aria-hidden="true"></span>
+      </button>
 
-            <!-- Retry Helper Link -->
-            <p class="helper-text" id="helperText" style="display: none;">
-                Didn't redirect automatically? <a href="#" id="retryLink">Click here to try again</a>.
-            </p>
-        </div>
+      <!-- Retry Helper Link -->
+      <p class="helper-text" id="helperText" style="display: none;">
+        Didn't redirect automatically? <a href="#" id="retryLink">Click here to try again</a>.
+      </p>
+    </div>
 
-        <!-- Security Footer -->
-        <footer class="footer-note">
-            Attendance App Password Security • Deep-Link Recovery
-        </footer>
-    </main>
+    <!-- Security Footer -->
+    <footer class="footer-note">
+      Attendance App Password Security • Deep-Link Recovery
+    </footer>
+  </main>
 
-    <script>
-        (function () {
-            'use strict';
+  <script>
+    (function () {
+      'use strict';
 
-            // DOM Elements
-            const openAppBtn = document.getElementById('openAppBtn');
-            const btnText = document.getElementById('btnText');
-            const btnSpinner = document.getElementById('btnSpinner');
-            const errorCard = document.getElementById('errorCard');
-            const errorMessage = document.getElementById('errorMessage');
-            const helperText = document.getElementById('helperText');
-            const retryLink = document.getElementById('retryLink');
+      // DOM Elements
+      const openAppBtn = document.getElementById('openAppBtn');
+      const btnText = document.getElementById('btnText');
+      const btnSpinner = document.getElementById('btnSpinner');
+      const errorCard = document.getElementById('errorCard');
+      const errorMessage = document.getElementById('errorMessage');
+      const helperText = document.getElementById('helperText');
+      const retryLink = document.getElementById('retryLink');
 
-            // Target Flutter Scheme
-            const FLUTTER_DEEP_LINK_BASE = 'com.example.flutter_application_1://reset-password';
+      // Scheme & Package Info
+      const SCHEME = 'com.example.flutter_application_1';
+      const HOST = 'reset-password';
+      const PACKAGE = 'com.example.flutter_application_1';
+      const FLUTTER_DEEP_LINK_BASE = SCHEME + '://' + HOST;
 
-            let constructedDeepLink = null;
+      let customSchemeUrl = null;
+      let androidIntentUrl = null;
+      let verificationUrl = null;
 
-            /**
-             * Safely decode URI components without throwing exceptions
-             */
-            function safeDecode(encodedStr) {
-                if (!encodedStr) return '';
-                try {
-                    let decoded = encodedStr;
-                    if (decoded.includes('%')) {
-                        decoded = decodeURIComponent(decoded);
-                    }
-                    if (decoded.includes('%')) {
-                        decoded = decodeURIComponent(decoded);
-                    }
-                    return decoded;
-                } catch (e) {
-                    return encodedStr;
-                }
+      /**
+       * Safely decode URI components without throwing exceptions
+       */
+      function safeDecode(encodedStr) {
+        if (!encodedStr) return '';
+        try {
+          let decoded = encodedStr;
+          if (decoded.includes('%')) {
+            decoded = decodeURIComponent(decoded);
+          }
+          if (decoded.includes('%')) {
+            decoded = decodeURIComponent(decoded);
+          }
+          return decoded;
+        } catch (e) {
+          return encodedStr;
+        }
+      }
+
+      /**
+       * Extract and validate Supabase recovery URL information
+       */
+      function extractRecoveryInformation() {
+        const pageSearchParams = new URLSearchParams(window.location.search);
+        const confirmationUrlParam = pageSearchParams.get('confirmation_url');
+
+        let targetUrlObj = null;
+
+        if (confirmationUrlParam) {
+          const decodedConfirmationUrl = safeDecode(confirmationUrlParam);
+          try {
+            if (/^https?:\/\//i.test(decodedConfirmationUrl)) {
+              targetUrlObj = new URL(decodedConfirmationUrl);
             }
+          } catch (e) {
+            targetUrlObj = null;
+          }
+        }
 
-            /**
-             * Extract and validate Supabase recovery URL information
-             */
-            function extractRecoveryInformation() {
-                const pageSearchParams = new URLSearchParams(window.location.search);
-                const confirmationUrlParam = pageSearchParams.get('confirmation_url');
+        if (!targetUrlObj) {
+          try {
+            targetUrlObj = new URL(window.location.href);
+          } catch (e) {
+            targetUrlObj = null;
+          }
+        }
 
-                let targetUrlObj = null;
+        if (!targetUrlObj) {
+          return { isValid: false, reason: 'Missing or malformed confirmation URL.' };
+        }
 
-                if (confirmationUrlParam) {
-                    const decodedConfirmationUrl = safeDecode(confirmationUrlParam);
-                    try {
-                        if (/^https?:\/\//i.test(decodedConfirmationUrl)) {
-                            targetUrlObj = new URL(decodedConfirmationUrl);
-                        }
-                    } catch (e) {
-                        targetUrlObj = null;
-                    }
-                } else {
-                    try {
-                        targetUrlObj = new URL(window.location.href);
-                    } catch (e) {
-                        targetUrlObj = null;
-                    }
-                }
+        const searchParams = targetUrlObj.searchParams;
+        let hashParams = new URLSearchParams();
+        if (targetUrlObj.hash) {
+          hashParams = new URLSearchParams(targetUrlObj.hash.replace(/^#/, ''));
+        }
 
-                if (!targetUrlObj) {
-                    return { isValid: false, reason: 'Missing or malformed confirmation URL.' };
-                }
+        // Check for Supabase errors
+        const error = searchParams.get('error') || hashParams.get('error');
+        const errorDescription = searchParams.get('error_description') || hashParams.get('error_description');
 
-                const searchParams = targetUrlObj.searchParams;
-                let hashParams = new URLSearchParams();
-                if (targetUrlObj.hash) {
-                    hashParams = new URLSearchParams(targetUrlObj.hash.replace(/^#/, ''));
-                }
+        if (error || errorDescription) {
+          const desc = errorDescription ? safeDecode(errorDescription) : 'The link has expired or was already used.';
+          return { isValid: false, reason: desc };
+        }
 
-                // Check for Supabase errors
-                const error = searchParams.get('error') || hashParams.get('error');
-                const errorDescription = searchParams.get('error_description') || hashParams.get('error_description');
+        // Extract target URL parameters
+        let verificationUrl = null;
+        if (confirmationUrlParam) {
+          try {
+            const decodedConfirmationUrl = safeDecode(confirmationUrlParam);
+            const verifyObj = new URL(decodedConfirmationUrl);
+            // Ensure redirect_to in Supabase verification link points to the Flutter app deep link
+            verifyObj.searchParams.set('redirect_to', FLUTTER_DEEP_LINK_BASE);
+            verificationUrl = verifyObj.toString();
+          } catch (e) {
+            verificationUrl = null;
+          }
+        }
 
-                if (error || errorDescription) {
-                    const desc = errorDescription ? safeDecode(errorDescription) : 'The link has expired or was already used.';
-                    return { isValid: false, reason: desc };
-                }
+        // Extract query and hash parts for direct deep link fallback
+        const queryPart = targetUrlObj.search || '';
+        const hashPart = targetUrlObj.hash || '';
 
-                // Verify recovery parameters
-                const type = searchParams.get('type') || hashParams.get('type');
-                const hasCode = searchParams.has('code') || hashParams.has('code');
-                const hasToken = searchParams.has('token') || searchParams.has('token_hash') || hashParams.has('access_token') || hashParams.has('token');
+        // Construct Custom Scheme URL: com.example.flutter_application_1://reset-password?params#hash
+        const customUrl = FLUTTER_DEEP_LINK_BASE + queryPart + hashPart;
 
-                const isRecoveryType = (type === 'recovery');
-                const hasValidPayload = isRecoveryType || hasCode || hasToken;
+        // Construct Android Intent URL for Android Chrome compatibility:
+        let intentPath = HOST + queryPart;
+        if (hashPart) {
+          intentPath += hashPart;
+        }
+        const intentUrl = 'intent://' + intentPath + '#Intent;scheme=' + SCHEME + ';package=' + PACKAGE + ';end;';
 
-                if (!hasValidPayload) {
-                    return { isValid: false, reason: 'This link does not contain a valid password recovery request.' };
-                }
+        return {
+          isValid: true,
+          verificationUrl: verificationUrl,
+          customSchemeUrl: customUrl,
+          androidIntentUrl: intentUrl
+        };
+      }
 
-                // Construct Flutter deep link preserving query & hash parameters
-                const queryPart = targetUrlObj.search || '';
-                const hashPart = targetUrlObj.hash || '';
+      /**
+       * Render error UI state
+       */
+      function showError(reasonMessage) {
+        errorCard.style.display = 'block';
+        if (reasonMessage) {
+          errorMessage.textContent = reasonMessage;
+        }
+        openAppBtn.disabled = true;
+        openAppBtn.style.opacity = '0.6';
+        openAppBtn.style.cursor = 'not-allowed';
+      }
 
-                const fullDeepLink = FLUTTER_DEEP_LINK_BASE + queryPart + hashPart;
+      /**
+       * Trigger app redirect upon user button click using multi-strategy fallback
+       */
+      function executeDeepLinkRedirect() {
+        if (!verificationUrl && !customSchemeUrl && !androidIntentUrl) return;
 
-                return { isValid: true, deepLink: fullDeepLink };
-            }
+        // Set Loading UI state
+        openAppBtn.disabled = true;
+        btnText.textContent = 'Opening Attendance App...';
+        btnSpinner.style.display = 'inline-block';
+        helperText.style.display = 'block';
 
-            /**
-             * Render error UI state
-             */
-            function showError(reasonMessage) {
-                errorCard.style.display = 'block';
-                if (reasonMessage) {
-                    errorMessage.textContent = reasonMessage;
-                }
-                openAppBtn.disabled = true;
-                openAppBtn.style.opacity = '0.6';
-                openAppBtn.style.cursor = 'not-allowed';
-            }
+        if (verificationUrl) {
+          // Navigating to Supabase verification URL validates the token on Supabase servers
+          // and automatically performs an HTTP 302 redirect to com.example.flutter_application_1://reset-password#access_token=...&type=recovery
+          window.location.href = verificationUrl;
+          return;
+        }
 
-            /**
-             * Trigger app redirect upon user button click
-             */
-            function executeDeepLinkRedirect() {
-                if (!constructedDeepLink) return;
+        const isAndroid = /Android/i.test(navigator.userAgent);
 
-                // Set Loading UI state
-                openAppBtn.disabled = true;
-                btnText.textContent = 'Opening Attendance App...';
-                btnSpinner.style.display = 'inline-block';
-                helperText.style.display = 'block';
+        if (isAndroid && androidIntentUrl) {
+          // Strategy 1: Create invisible <a> tag for Android Chrome Intent URL
+          const link = document.createElement('a');
+          link.href = androidIntentUrl;
+          link.rel = 'noreferrer';
+          document.body.appendChild(link);
+          link.click();
 
-                // Redirect to custom app scheme
-                window.location.href = constructedDeepLink;
+          // Strategy 2: Fallback window.location to Intent URL after 300ms
+          setTimeout(function () {
+            window.location.href = androidIntentUrl;
+          }, 300);
 
-                // Reset button state after a delay if user remains on page
-                setTimeout(function () {
-                    btnText.textContent = 'Open Attendance App';
-                    btnSpinner.style.display = 'none';
-                    openAppBtn.disabled = false;
-                }, 3000);
-            }
+          // Strategy 3: Direct custom scheme fallback after 800ms
+          setTimeout(function () {
+            window.location.href = customSchemeUrl;
+          }, 800);
+        } else {
+          // Standard custom scheme redirect for non-Android
+          window.location.href = customSchemeUrl;
+        }
 
-            // Initialize on DOM Ready
-            document.addEventListener('DOMContentLoaded', function () {
-                const result = extractRecoveryInformation();
+        // Reset button state after 3.5 seconds if app was not launched or user returned
+        setTimeout(function () {
+          btnText.textContent = 'Open Attendance App';
+          btnSpinner.style.display = 'none';
+          openAppBtn.disabled = false;
+        }, 3500);
+      }
 
-                if (!result.isValid) {
-                    showError(result.reason);
-                } else {
-                    constructedDeepLink = result.deepLink;
-                }
+      // Initialize on DOM Ready
+      document.addEventListener('DOMContentLoaded', function () {
+        const result = extractRecoveryInformation();
 
-                // Event Listeners
-                openAppBtn.addEventListener('click', function () {
-                    executeDeepLinkRedirect();
-                });
+        if (!result.isValid) {
+          showError(result.reason);
+        } else {
+          verificationUrl = result.verificationUrl;
+          customSchemeUrl = result.customSchemeUrl;
+          androidIntentUrl = result.androidIntentUrl;
+        }
 
-                retryLink.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    executeDeepLinkRedirect();
-                });
-            });
-        })();
-    </script>
+        // Event Listeners
+        openAppBtn.addEventListener('click', function () {
+          executeDeepLinkRedirect();
+        });
+
+        retryLink.addEventListener('click', function (e) {
+          e.preventDefault();
+          executeDeepLinkRedirect();
+        });
+      });
+    })();
+  </script>
 </body>
-
 </html>

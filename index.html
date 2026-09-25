@@ -323,6 +323,7 @@
 
       let customSchemeUrl = null;
       let androidIntentUrl = null;
+      let verificationUrl = null;
 
       /**
        * Safely decode URI components without throwing exceptions
@@ -390,7 +391,21 @@
           return { isValid: false, reason: desc };
         }
 
-        // Extract query and hash parts
+        // Extract target URL parameters
+        let verificationUrl = null;
+        if (confirmationUrlParam) {
+          try {
+            const decodedConfirmationUrl = safeDecode(confirmationUrlParam);
+            const verifyObj = new URL(decodedConfirmationUrl);
+            // Ensure redirect_to in Supabase verification link points to the Flutter app deep link
+            verifyObj.searchParams.set('redirect_to', FLUTTER_DEEP_LINK_BASE);
+            verificationUrl = verifyObj.toString();
+          } catch (e) {
+            verificationUrl = null;
+          }
+        }
+
+        // Extract query and hash parts for direct deep link fallback
         const queryPart = targetUrlObj.search || '';
         const hashPart = targetUrlObj.hash || '';
 
@@ -398,7 +413,6 @@
         const customUrl = FLUTTER_DEEP_LINK_BASE + queryPart + hashPart;
 
         // Construct Android Intent URL for Android Chrome compatibility:
-        // Format: intent://reset-password?params#Intent;scheme=com.example.flutter_application_1;package=com.example.flutter_application_1;end;
         let intentPath = HOST + queryPart;
         if (hashPart) {
           intentPath += hashPart;
@@ -407,6 +421,7 @@
 
         return {
           isValid: true,
+          verificationUrl: verificationUrl,
           customSchemeUrl: customUrl,
           androidIntentUrl: intentUrl
         };
@@ -429,13 +444,20 @@
        * Trigger app redirect upon user button click using multi-strategy fallback
        */
       function executeDeepLinkRedirect() {
-        if (!customSchemeUrl && !androidIntentUrl) return;
+        if (!verificationUrl && !customSchemeUrl && !androidIntentUrl) return;
 
         // Set Loading UI state
         openAppBtn.disabled = true;
         btnText.textContent = 'Opening Attendance App...';
         btnSpinner.style.display = 'inline-block';
         helperText.style.display = 'block';
+
+        if (verificationUrl) {
+          // Navigating to Supabase verification URL validates the token on Supabase servers
+          // and automatically performs an HTTP 302 redirect to com.example.flutter_application_1://reset-password#access_token=...&type=recovery
+          window.location.href = verificationUrl;
+          return;
+        }
 
         const isAndroid = /Android/i.test(navigator.userAgent);
 
@@ -461,7 +483,7 @@
           window.location.href = customSchemeUrl;
         }
 
-        // Reset button state after 3 seconds if app was not launched or user returned
+        // Reset button state after 3.5 seconds if app was not launched or user returned
         setTimeout(function () {
           btnText.textContent = 'Open Attendance App';
           btnSpinner.style.display = 'none';
@@ -476,6 +498,7 @@
         if (!result.isValid) {
           showError(result.reason);
         } else {
+          verificationUrl = result.verificationUrl;
           customSchemeUrl = result.customSchemeUrl;
           androidIntentUrl = result.androidIntentUrl;
         }
