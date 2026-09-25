@@ -315,10 +315,14 @@
       const helperText = document.getElementById('helperText');
       const retryLink = document.getElementById('retryLink');
 
-      // Target Flutter Scheme
-      const FLUTTER_DEEP_LINK_BASE = 'com.example.flutter_application_1://reset-password';
+      // Scheme & Package Info
+      const SCHEME = 'com.example.flutter_application_1';
+      const HOST = 'reset-password';
+      const PACKAGE = 'com.example.flutter_application_1';
+      const FLUTTER_DEEP_LINK_BASE = SCHEME + '://' + HOST;
 
-      let constructedDeepLink = null;
+      let customSchemeUrl = null;
+      let androidIntentUrl = null;
 
       /**
        * Safely decode URI components without throwing exceptions
@@ -357,7 +361,9 @@
           } catch (e) {
             targetUrlObj = null;
           }
-        } else {
+        }
+
+        if (!targetUrlObj) {
           try {
             targetUrlObj = new URL(window.location.href);
           } catch (e) {
@@ -384,25 +390,26 @@
           return { isValid: false, reason: desc };
         }
 
-        // Verify recovery parameters
-        const type = searchParams.get('type') || hashParams.get('type');
-        const hasCode = searchParams.has('code') || hashParams.has('code');
-        const hasToken = searchParams.has('token') || searchParams.has('token_hash') || hashParams.has('access_token') || hashParams.has('token');
-
-        const isRecoveryType = (type === 'recovery');
-        const hasValidPayload = isRecoveryType || hasCode || hasToken;
-
-        if (!hasValidPayload) {
-          return { isValid: false, reason: 'This link does not contain a valid password recovery request.' };
-        }
-
-        // Construct Flutter deep link preserving query & hash parameters
+        // Extract query and hash parts
         const queryPart = targetUrlObj.search || '';
         const hashPart = targetUrlObj.hash || '';
 
-        const fullDeepLink = FLUTTER_DEEP_LINK_BASE + queryPart + hashPart;
+        // Construct Custom Scheme URL: com.example.flutter_application_1://reset-password?params#hash
+        const customUrl = FLUTTER_DEEP_LINK_BASE + queryPart + hashPart;
 
-        return { isValid: true, deepLink: fullDeepLink };
+        // Construct Android Intent URL for Android Chrome compatibility:
+        // Format: intent://reset-password?params#Intent;scheme=com.example.flutter_application_1;package=com.example.flutter_application_1;end;
+        let intentPath = HOST + queryPart;
+        if (hashPart) {
+          intentPath += hashPart;
+        }
+        const intentUrl = 'intent://' + intentPath + '#Intent;scheme=' + SCHEME + ';package=' + PACKAGE + ';end;';
+
+        return {
+          isValid: true,
+          customSchemeUrl: customUrl,
+          androidIntentUrl: intentUrl
+        };
       }
 
       /**
@@ -419,10 +426,10 @@
       }
 
       /**
-       * Trigger app redirect upon user button click
+       * Trigger app redirect upon user button click using multi-strategy fallback
        */
       function executeDeepLinkRedirect() {
-        if (!constructedDeepLink) return;
+        if (!customSchemeUrl && !androidIntentUrl) return;
 
         // Set Loading UI state
         openAppBtn.disabled = true;
@@ -430,15 +437,36 @@
         btnSpinner.style.display = 'inline-block';
         helperText.style.display = 'block';
 
-        // Redirect to custom app scheme
-        window.location.href = constructedDeepLink;
+        const isAndroid = /Android/i.test(navigator.userAgent);
 
-        // Reset button state after a delay if user remains on page
+        if (isAndroid && androidIntentUrl) {
+          // Strategy 1: Create invisible <a> tag for Android Chrome Intent URL
+          const link = document.createElement('a');
+          link.href = androidIntentUrl;
+          link.rel = 'noreferrer';
+          document.body.appendChild(link);
+          link.click();
+
+          // Strategy 2: Fallback window.location to Intent URL after 300ms
+          setTimeout(function () {
+            window.location.href = androidIntentUrl;
+          }, 300);
+
+          // Strategy 3: Direct custom scheme fallback after 800ms
+          setTimeout(function () {
+            window.location.href = customSchemeUrl;
+          }, 800);
+        } else {
+          // Standard custom scheme redirect for non-Android
+          window.location.href = customSchemeUrl;
+        }
+
+        // Reset button state after 3 seconds if app was not launched or user returned
         setTimeout(function () {
           btnText.textContent = 'Open Attendance App';
           btnSpinner.style.display = 'none';
           openAppBtn.disabled = false;
-        }, 3000);
+        }, 3500);
       }
 
       // Initialize on DOM Ready
@@ -448,7 +476,8 @@
         if (!result.isValid) {
           showError(result.reason);
         } else {
-          constructedDeepLink = result.deepLink;
+          customSchemeUrl = result.customSchemeUrl;
+          androidIntentUrl = result.androidIntentUrl;
         }
 
         // Event Listeners
