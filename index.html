@@ -31,6 +31,9 @@
       --success-bg: #F0FDF4;
       --success-border: #86EFAC;
       --success-text: #166534;
+      --info-bg: #EFF6FF;
+      --info-border: #BFDBFE;
+      --info-text: #1E40AF;
       --shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
       --radius-card: 24px;
       --radius-btn: 14px;
@@ -62,7 +65,7 @@
       max-width: 440px;
       border-radius: var(--radius-card);
       box-shadow: var(--shadow);
-      padding: 40px 32px;
+      padding: 36px 28px;
       text-align: center;
       border: 1px solid rgba(255, 255, 255, 0.8);
       position: relative;
@@ -81,45 +84,100 @@
       background: var(--primary-light);
       padding: 6px 14px;
       border-radius: 20px;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
     }
 
     .icon-wrapper {
-      width: 72px;
-      height: 72px;
+      width: 64px;
+      height: 64px;
       border-radius: var(--radius-icon);
       background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
       display: flex;
       align-items: center;
       justify-content: center;
-      margin: 0 auto 20px auto;
+      margin: 0 auto 16px auto;
       color: var(--primary);
       box-shadow: 0 8px 16px -4px rgba(0, 102, 255, 0.15);
     }
 
     .icon-wrapper svg {
-      width: 36px;
-      height: 36px;
+      width: 32px;
+      height: 32px;
     }
 
     h1 {
       font-size: 22px;
       font-weight: 700;
       color: var(--text-main);
-      margin-bottom: 8px;
+      margin-bottom: 6px;
       letter-spacing: -0.4px;
     }
 
     p.description {
-      font-size: 14px;
+      font-size: 13.5px;
       color: var(--text-muted);
-      margin-bottom: 24px;
+      margin-bottom: 20px;
       line-height: 1.5;
+    }
+
+    .alert-card {
+      display: none;
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 20px;
+      text-align: left;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .alert-card.error {
+      display: block;
+      background-color: var(--error-bg);
+      border: 1px solid var(--error-border);
+      color: var(--error-text);
+    }
+
+    .alert-card.success {
+      display: block;
+      background-color: var(--success-bg);
+      border: 1px solid var(--success-border);
+      color: var(--success-text);
+    }
+
+    .alert-card.info {
+      display: block;
+      background-color: var(--info-bg);
+      border: 1px solid var(--info-border);
+      color: var(--info-text);
+    }
+
+    /* Fallback OTP Form Card */
+    .otp-card {
+      display: none;
+      background-color: #F8FAFC;
+      border: 1.5px solid var(--border-color);
+      border-radius: 16px;
+      padding: 18px;
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    .otp-card h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 4px;
+    }
+
+    .otp-card p {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      margin-bottom: 14px;
     }
 
     .form-group {
       text-align: left;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
       position: relative;
     }
 
@@ -144,15 +202,14 @@
       font-size: 15px;
       font-family: inherit;
       color: var(--text-main);
-      background-color: #F8FAFC;
+      background-color: #FFFFFF;
       border: 1.5px solid var(--border-color);
       border-radius: 12px;
       outline: none;
-      transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
     }
 
     .form-control:focus {
-      background-color: #FFFFFF;
       border-color: var(--primary);
       box-shadow: 0 0 0 4px rgba(0, 102, 255, 0.1);
     }
@@ -183,7 +240,7 @@
     .validation-msg {
       font-size: 12.5px;
       min-height: 20px;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
       text-align: left;
       font-weight: 500;
       display: flex;
@@ -201,12 +258,12 @@
 
     .btn-primary {
       width: 100%;
-      height: 52px;
+      height: 50px;
       background-color: var(--primary);
       color: #FFFFFF;
       border: none;
       border-radius: var(--radius-btn);
-      font-size: 16px;
+      font-size: 15.5px;
       font-weight: 600;
       cursor: pointer;
       display: inline-flex;
@@ -215,13 +272,13 @@
       gap: 10px;
       text-decoration: none;
       transition: all 0.2s ease;
-      box-shadow: 0 10px 15px -3px rgba(0, 102, 255, 0.3);
+      box-shadow: 0 10px 15px -3px rgba(0, 102, 255, 0.25);
       -webkit-tap-highlight-color: transparent;
     }
 
     .btn-primary:hover:not(:disabled) {
       background-color: var(--primary-hover);
-      box-shadow: 0 12px 20px -3px rgba(0, 102, 255, 0.4);
+      box-shadow: 0 12px 20px -3px rgba(0, 102, 255, 0.35);
     }
 
     .btn-primary:active:not(:disabled) {
@@ -237,10 +294,26 @@
       opacity: 0.7;
     }
 
+    .btn-secondary {
+      width: 100%;
+      height: 44px;
+      background-color: #FFFFFF;
+      color: var(--primary);
+      border: 1.5px solid var(--primary);
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 8px;
+    }
+
     .spinner {
-      width: 20px;
-      height: 20px;
-      border: 3px solid rgba(255, 255, 255, 0.3);
+      width: 18px;
+      height: 18px;
+      border: 2.5px solid rgba(255, 255, 255, 0.3);
       border-radius: 50%;
       border-top-color: #FFFFFF;
       animation: spin 0.8s linear infinite;
@@ -253,7 +326,7 @@
     }
 
     .helper-text {
-      margin-top: 20px;
+      margin-top: 18px;
       font-size: 13px;
       color: var(--text-muted);
     }
@@ -264,36 +337,12 @@
       font-weight: 600;
     }
 
-    .alert-card {
-      display: none;
-      border-radius: 14px;
-      padding: 16px;
-      margin-bottom: 20px;
-      text-align: left;
-      font-size: 13.5px;
-      line-height: 1.5;
-    }
-
-    .alert-card.error {
-      display: block;
-      background-color: var(--error-bg);
-      border: 1px solid var(--error-border);
-      color: var(--error-text);
-    }
-
-    .alert-card.success {
-      display: block;
-      background-color: var(--success-bg);
-      border: 1px solid var(--success-border);
-      color: var(--success-text);
-    }
-
     .footer-note {
-      margin-top: 28px;
+      margin-top: 24px;
       font-size: 12px;
       color: #94A3B8;
       border-top: 1px solid #F1F5F9;
-      padding-top: 16px;
+      padding-top: 14px;
     }
   </style>
 </head>
@@ -315,6 +364,24 @@
 
     <!-- Alert Message Container -->
     <div class="alert-card" id="alertCard" role="alert"></div>
+
+    <!-- Fallback OTP Section (Shown if Brave/Browser stripped URL tokens) -->
+    <div class="otp-card" id="otpCard">
+      <h3>Authentication Required</h3>
+      <p>Your browser stripped the session link. Enter your email and the 6-digit code or token from your reset email to verify:</p>
+      
+      <div class="form-group">
+        <label for="otpEmail">Email Address</label>
+        <input type="email" id="otpEmail" class="form-control" placeholder="your.email@example.com" style="padding-right: 16px;" />
+      </div>
+
+      <div class="form-group">
+        <label for="otpCode">6-Digit Code / Token</label>
+        <input type="text" id="otpCode" class="form-control" placeholder="e.g. 123456 or token" style="padding-right: 16px;" />
+      </div>
+
+      <button type="button" class="btn-secondary" id="verifyOtpBtn">Verify Code & Enable Form</button>
+    </div>
 
     <div id="contentSection">
       <h1>Reset Password</h1>
@@ -361,7 +428,7 @@
         <!-- Live Validation Helper -->
         <div class="validation-msg" id="validationMsg"></div>
 
-        <!-- Primary Action Button (DISABLED initially until passwords match) -->
+        <!-- Primary Action Button -->
         <button class="btn-primary" id="openAppBtn" type="button" disabled aria-label="Open Attendance App">
           <span id="btnText">Open Attendance App</span>
           <span id="btnSpinner" class="spinner" style="display: none;" aria-hidden="true"></span>
@@ -379,9 +446,10 @@
   </main>
 
   <script>
-    // PRESERVE RAW URL PARAMETERS IMMEDIATELY BEFORE ANY BROWSER ROUTING OR CLEARS
+    // PRESERVE RAW URL STRINGS IMMEDIATELY
     const INITIAL_HASH = window.location.hash || '';
     const INITIAL_SEARCH = window.location.search || '';
+    const INITIAL_HREF = window.location.href || '';
 
     (function () {
       'use strict';
@@ -407,13 +475,16 @@
       const btnText = document.getElementById('btnText');
       const btnSpinner = document.getElementById('btnSpinner');
       const alertCard = document.getElementById('alertCard');
+      const otpCard = document.getElementById('otpCard');
+      const otpEmail = document.getElementById('otpEmail');
+      const otpCode = document.getElementById('otpCode');
+      const verifyOtpBtn = document.getElementById('verifyOtpBtn');
       const helperText = document.getElementById('helperText');
       const retryLink = document.getElementById('retryLink');
 
       let supabaseClient = null;
       let sessionEstablished = false;
 
-      // Create Supabase JS Client with auto-session detection enabled
       if (window.supabase) {
         supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
           auth: {
@@ -424,11 +495,9 @@
         });
       }
 
-      console.log('RECOVERY PAGE INITIALIZED');
-
-      function showAlert(message, isSuccess = false) {
+      function showAlert(message, type = 'error') {
         alertCard.style.display = 'block';
-        alertCard.className = isSuccess ? 'alert-card success' : 'alert-card error';
+        alertCard.className = 'alert-card ' + type;
         alertCard.innerHTML = message;
       }
 
@@ -438,26 +507,29 @@
       }
 
       /**
-       * ESTABLISH RECOVERY SESSION FROM ALL POSSIBLE SUPABASE PARAMETERS
+       * AUTOMATIC SESSION RESOLUTION FROM URL
        */
       async function establishSession() {
         if (!supabaseClient) return false;
 
         try {
-          // 1. Check existing session
+          // Check active session
           const { data: { session } } = await supabaseClient.auth.getSession();
           if (session) {
-            console.log('ACTIVE SESSION FOUND:', session.user.email);
+            console.log('ACTIVE SESSION:', session.user.email);
             sessionEstablished = true;
+            showAlert('✓ Recovery session active for: <strong>' + session.user.email + '</strong>', 'success');
+            otpCard.style.display = 'none';
             return true;
           }
 
-          // 2. Parse URL hash & query strings
-          const hashStr = INITIAL_HASH || window.location.hash || '';
-          const searchStr = INITIAL_SEARCH || window.location.search || '';
+          // Parse hash and search parameters
+          const fullUrl = INITIAL_HREF;
+          const hashStr = INITIAL_HASH || (fullUrl.includes('#') ? fullUrl.substring(fullUrl.indexOf('#')) : '');
+          const searchStr = INITIAL_SEARCH || (fullUrl.includes('?') ? fullUrl.substring(fullUrl.indexOf('?')) : '');
 
           const hashParams = new URLSearchParams(hashStr.replace(/^#/, ''));
-          const searchParams = new URLSearchParams(searchStr);
+          const searchParams = new URLSearchParams(searchStr.replace(/^\?/, ''));
 
           const accessToken = hashParams.get('access_token') || searchParams.get('access_token');
           const refreshToken = hashParams.get('refresh_token') || searchParams.get('refresh_token');
@@ -465,41 +537,38 @@
           const code = searchParams.get('code') || hashParams.get('code');
           const type = searchParams.get('type') || hashParams.get('type') || 'recovery';
 
-          // A. Hash Token SetSession
           if (accessToken && refreshToken) {
-            console.log('ESTABLISHING SESSION VIA ACCESS_TOKEN & REFRESH_TOKEN...');
             const { data, error } = await supabaseClient.auth.setSession({
               access_token: accessToken,
               refresh_token: refreshToken
             });
             if (!error && data?.session) {
               sessionEstablished = true;
-              console.log('SESSION ESTABLISHED VIA SETSESSION');
+              showAlert('✓ Session authenticated via recovery token', 'success');
+              otpCard.style.display = 'none';
               return true;
             }
           }
 
-          // B. Verify OTP Token Hash
           if (tokenHash) {
-            console.log('ESTABLISHING SESSION VIA TOKEN_HASH...');
             const { data, error } = await supabaseClient.auth.verifyOtp({
               token_hash: tokenHash,
               type: type
             });
             if (!error && data?.session) {
               sessionEstablished = true;
-              console.log('SESSION ESTABLISHED VIA VERIFYOTP');
+              showAlert('✓ Session authenticated via token hash', 'success');
+              otpCard.style.display = 'none';
               return true;
             }
           }
 
-          // C. Exchange Code for Session (PKCE)
           if (code) {
-            console.log('ESTABLISHING SESSION VIA CODE...');
             const { data, error } = await supabaseClient.auth.exchangeCodeForSession(code);
             if (!error && data?.session) {
               sessionEstablished = true;
-              console.log('SESSION ESTABLISHED VIA EXCHANGECODE');
+              showAlert('✓ Session authenticated via PKCE code', 'success');
+              otpCard.style.display = 'none';
               return true;
             }
           }
@@ -508,26 +577,64 @@
           console.error('Session establishment error:', e);
         }
 
+        // Show Fallback OTP verification form if session not established automatically
+        sessionEstablished = false;
+        showAlert('<strong>Notice:</strong> No active recovery session in URL. If your browser stripped the link tokens, enter your email & code below.', 'info');
+        otpCard.style.display = 'block';
         return false;
       }
+
+      // Verify OTP Code manually if browser stripped URL
+      verifyOtpBtn.addEventListener('click', async function () {
+        const email = otpEmail.value.trim();
+        const code = otpCode.value.trim();
+
+        if (!email || !code) {
+          showAlert('Please enter both your email address and the code/token received in your email.');
+          return;
+        }
+
+        verifyOtpBtn.disabled = true;
+        verifyOtpBtn.textContent = 'Verifying...';
+
+        try {
+          // Attempt verifyOtp with token
+          const { data, error } = await supabaseClient.auth.verifyOtp({
+            email: email,
+            token: code,
+            type: 'recovery'
+          });
+
+          if (error) throw error;
+
+          if (data?.session) {
+            sessionEstablished = true;
+            showAlert('✓ Session verified for <strong>' + email + '</strong>! You may now set your new password below.', 'success');
+            otpCard.style.display = 'none';
+            validateForm();
+          } else {
+            throw new Error('Verification failed. Check your email and code.');
+          }
+        } catch (err) {
+          showAlert('OTP Verification Error: ' + (err.message || 'Invalid code or email.'));
+        } finally {
+          verifyOtpBtn.disabled = false;
+          verifyOtpBtn.textContent = 'Verify Code & Enable Form';
+        }
+      });
 
       // Listen for auth state changes
       if (supabaseClient) {
         supabaseClient.auth.onAuthStateChange((event, session) => {
-          console.log('AUTH EVENT:', event, session ? session.user.email : 'NO SESSION');
           if (session) {
             sessionEstablished = true;
+            otpCard.style.display = 'none';
+            showAlert('✓ Active session verified for ' + session.user.email, 'success');
           }
         });
       }
 
-      // Execute on page load
-      document.addEventListener('DOMContentLoaded', async () => {
-        const success = await establishSession();
-        if (!success && !sessionEstablished) {
-          console.warn('NO RECOVERY SESSION FOUND ON PAGE LOAD');
-        }
-      });
+      document.addEventListener('DOMContentLoaded', establishSession);
 
       /**
        * Password Input Visibility Toggles
@@ -613,7 +720,6 @@
 
         const newPassword = newPasswordInput.value;
 
-        // UI Loading State
         openAppBtn.disabled = true;
         btnText.textContent = 'Updating Password...';
         btnSpinner.style.display = 'inline-block';
@@ -621,13 +727,10 @@
 
         try {
           if (supabaseClient) {
-            // Re-verify or establish session if not already established
-            let active = sessionEstablished;
-            if (!active) {
-              active = await establishSession();
+            if (!sessionEstablished) {
+              await establishSession();
             }
 
-            // Attempt to update password
             const { data, error: updateError } = await supabaseClient.auth.updateUser({
               password: newPassword
             });
@@ -639,8 +742,7 @@
             console.log('PASSWORD UPDATED SUCCESSFULLY FOR USER:', data?.user?.email);
           }
 
-          // Show Success Feedback
-          showAlert('<strong>Password Updated Successfully!</strong><br/>Opening Attendance App...', true);
+          showAlert('<strong>Password Updated Successfully!</strong><br/>Opening Attendance App...', 'success');
           btnText.textContent = 'Opening App...';
 
           setTimeout(function () {
@@ -649,7 +751,7 @@
 
         } catch (err) {
           console.error('Password Update Error:', err);
-          showAlert('<strong>Update Error:</strong> ' + (err.message || 'Auth session missing. Please request a new password reset email from the app.'));
+          showAlert('<strong>Update Error:</strong> ' + (err.message || 'Auth session missing. Use the verification box above to authenticate.'), 'error');
           openAppBtn.disabled = false;
           btnText.textContent = 'Open Attendance App';
           btnSpinner.style.display = 'none';
