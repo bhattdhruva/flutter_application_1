@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -14,7 +15,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    /* Baseline CSS & Design System */
     :root {
       --primary: #0066FF;
       --primary-hover: #0052CC;
@@ -28,8 +28,9 @@
       --error-bg: #FEF2F2;
       --error-border: #FCA5A5;
       --error-text: #991B1B;
-      --error-subtext: #B91C1C;
-      --success-text: #16A34A;
+      --success-bg: #F0FDF4;
+      --success-border: #86EFAC;
+      --success-text: #166534;
       --shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
       --radius-card: 24px;
       --radius-btn: 14px;
@@ -55,7 +56,6 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    /* Container Card */
     .container {
       background: var(--card-bg);
       width: 100%;
@@ -69,7 +69,6 @@
       overflow: hidden;
     }
 
-    /* Header Brand Badge */
     .brand {
       display: inline-flex;
       align-items: center;
@@ -85,7 +84,6 @@
       margin-bottom: 24px;
     }
 
-    /* Lock Icon Container */
     .icon-wrapper {
       width: 72px;
       height: 72px;
@@ -104,7 +102,6 @@
       height: 36px;
     }
 
-    /* Typography */
     h1 {
       font-size: 22px;
       font-weight: 700;
@@ -120,7 +117,6 @@
       line-height: 1.5;
     }
 
-    /* Input Form Group */
     .form-group {
       text-align: left;
       margin-bottom: 16px;
@@ -184,7 +180,6 @@
       height: 20px;
     }
 
-    /* Validation Helper Text */
     .validation-msg {
       font-size: 12.5px;
       min-height: 20px;
@@ -204,7 +199,6 @@
       color: var(--success-text);
     }
 
-    /* Primary Action Button (Disabled by default) */
     .btn-primary {
       width: 100%;
       height: 52px;
@@ -243,7 +237,6 @@
       opacity: 0.7;
     }
 
-    /* Loading Spinner */
     .spinner {
       width: 20px;
       height: 20px;
@@ -254,10 +247,11 @@
     }
 
     @keyframes spin {
-      to { transform: rotate(360deg); }
+      to {
+        transform: rotate(360deg);
+      }
     }
 
-    /* Helper Link */
     .helper-text {
       margin-top: 20px;
       font-size: 13px;
@@ -270,7 +264,6 @@
       font-weight: 600;
     }
 
-    /* Alert Banner */
     .alert-card {
       display: none;
       border-radius: 14px;
@@ -282,15 +275,17 @@
     }
 
     .alert-card.error {
+      display: block;
       background-color: var(--error-bg);
       border: 1px solid var(--error-border);
       color: var(--error-text);
     }
 
     .alert-card.success {
-      background-color: #F0FDF4;
-      border: 1px solid #86EFAC;
-      color: #166534;
+      display: block;
+      background-color: var(--success-bg);
+      border: 1px solid var(--success-border);
+      color: var(--success-text);
     }
 
     .footer-note {
@@ -302,6 +297,7 @@
     }
   </style>
 </head>
+
 <body>
 
   <main class="container" role="main">
@@ -310,7 +306,8 @@
     </div>
 
     <div class="icon-wrapper">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round">
         <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
         <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
       </svg>
@@ -320,9 +317,10 @@
     <div class="alert-card" id="alertCard" role="alert"></div>
 
     <div id="contentSection">
-      <h1>Reset Your Password</h1>
+      <h1>Reset Password</h1>
       <p class="description">
-        Enter your new password below. When both passwords match, click <strong>Open Attendance App</strong> to update your password and launch the app.
+        Enter your new password below. When both passwords match, click <strong>Open Attendance App</strong> to update
+        your password and launch the app.
       </p>
 
       <form id="resetForm" onsubmit="return false;">
@@ -330,9 +328,12 @@
         <div class="form-group">
           <label for="newPassword">New Password</label>
           <div class="input-wrapper">
-            <input type="password" id="newPassword" class="form-control" placeholder="At least 6 characters" autocomplete="new-password" required />
-            <button type="button" class="toggle-password" id="toggleNewPassword" aria-label="Toggle password visibility">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <input type="password" id="newPassword" class="form-control" placeholder="At least 6 characters"
+              autocomplete="new-password" required />
+            <button type="button" class="toggle-password" id="toggleNewPassword"
+              aria-label="Toggle password visibility">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                 <circle cx="12" cy="12" r="3"></circle>
               </svg>
@@ -344,9 +345,12 @@
         <div class="form-group">
           <label for="confirmPassword">Confirm Password</label>
           <div class="input-wrapper">
-            <input type="password" id="confirmPassword" class="form-control" placeholder="Re-enter new password" autocomplete="new-password" required />
-            <button type="button" class="toggle-password" id="toggleConfirmPassword" aria-label="Toggle confirm password visibility">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <input type="password" id="confirmPassword" class="form-control" placeholder="Re-enter new password"
+              autocomplete="new-password" required />
+            <button type="button" class="toggle-password" id="toggleConfirmPassword"
+              aria-label="Toggle confirm password visibility">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                 <circle cx="12" cy="12" r="3"></circle>
               </svg>
@@ -375,16 +379,20 @@
   </main>
 
   <script>
+    // PRESERVE RAW URL PARAMETERS IMMEDIATELY BEFORE ANY BROWSER ROUTING OR CLEARS
+    const INITIAL_HASH = window.location.hash || '';
+    const INITIAL_SEARCH = window.location.search || '';
+
     (function () {
       'use strict';
 
-      // Supabase Configuration
+      // Supabase Credentials
       const SUPABASE_URL = 'https://vvqmhbynwhllzvonsgzz.supabase.co';
-      const SUPABASE_ANON_KEY = 'sb_publishable_8hO469_QiCAWu6uZv2bcVA_p25SbWYT';
+      const SUPABASE_KEY = 'sb_publishable_8hO469_QiCAWu6uZv2bcVA_p25SbWYT';
 
-      // Scheme & Package Info for Deep Link
+      // Deep Link Constants
       const SCHEME = 'com.example.flutter_application_1';
-      const HOST = 'login';
+      const HOST = 'reset-password';
       const PACKAGE = 'com.example.flutter_application_1';
       const FLUTTER_DEEP_LINK = SCHEME + '://' + HOST;
       const ANDROID_INTENT_LINK = 'intent://' + HOST + '#Intent;scheme=' + SCHEME + ';package=' + PACKAGE + ';end;';
@@ -405,13 +413,124 @@
       let supabaseClient = null;
       let sessionEstablished = false;
 
-      // Initialize Supabase JS Client
+      // Create Supabase JS Client with auto-session detection enabled
       if (window.supabase) {
-        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+          auth: {
+            detectSessionInUrl: true,
+            persistSession: true,
+            autoRefreshToken: true
+          }
+        });
+      }
+
+      console.log('RECOVERY PAGE INITIALIZED');
+
+      function showAlert(message, isSuccess = false) {
+        alertCard.style.display = 'block';
+        alertCard.className = isSuccess ? 'alert-card success' : 'alert-card error';
+        alertCard.innerHTML = message;
+      }
+
+      function hideAlert() {
+        alertCard.style.display = 'none';
+        alertCard.textContent = '';
       }
 
       /**
-       * Toggle Password Field Visibility
+       * ESTABLISH RECOVERY SESSION FROM ALL POSSIBLE SUPABASE PARAMETERS
+       */
+      async function establishSession() {
+        if (!supabaseClient) return false;
+
+        try {
+          // 1. Check existing session
+          const { data: { session } } = await supabaseClient.auth.getSession();
+          if (session) {
+            console.log('ACTIVE SESSION FOUND:', session.user.email);
+            sessionEstablished = true;
+            return true;
+          }
+
+          // 2. Parse URL hash & query strings
+          const hashStr = INITIAL_HASH || window.location.hash || '';
+          const searchStr = INITIAL_SEARCH || window.location.search || '';
+
+          const hashParams = new URLSearchParams(hashStr.replace(/^#/, ''));
+          const searchParams = new URLSearchParams(searchStr);
+
+          const accessToken = hashParams.get('access_token') || searchParams.get('access_token');
+          const refreshToken = hashParams.get('refresh_token') || searchParams.get('refresh_token');
+          const tokenHash = searchParams.get('token_hash') || searchParams.get('token') || hashParams.get('token_hash');
+          const code = searchParams.get('code') || hashParams.get('code');
+          const type = searchParams.get('type') || hashParams.get('type') || 'recovery';
+
+          // A. Hash Token SetSession
+          if (accessToken && refreshToken) {
+            console.log('ESTABLISHING SESSION VIA ACCESS_TOKEN & REFRESH_TOKEN...');
+            const { data, error } = await supabaseClient.auth.setSession({
+              access_token: accessToken,
+              refresh_token: refreshToken
+            });
+            if (!error && data?.session) {
+              sessionEstablished = true;
+              console.log('SESSION ESTABLISHED VIA SETSESSION');
+              return true;
+            }
+          }
+
+          // B. Verify OTP Token Hash
+          if (tokenHash) {
+            console.log('ESTABLISHING SESSION VIA TOKEN_HASH...');
+            const { data, error } = await supabaseClient.auth.verifyOtp({
+              token_hash: tokenHash,
+              type: type
+            });
+            if (!error && data?.session) {
+              sessionEstablished = true;
+              console.log('SESSION ESTABLISHED VIA VERIFYOTP');
+              return true;
+            }
+          }
+
+          // C. Exchange Code for Session (PKCE)
+          if (code) {
+            console.log('ESTABLISHING SESSION VIA CODE...');
+            const { data, error } = await supabaseClient.auth.exchangeCodeForSession(code);
+            if (!error && data?.session) {
+              sessionEstablished = true;
+              console.log('SESSION ESTABLISHED VIA EXCHANGECODE');
+              return true;
+            }
+          }
+
+        } catch (e) {
+          console.error('Session establishment error:', e);
+        }
+
+        return false;
+      }
+
+      // Listen for auth state changes
+      if (supabaseClient) {
+        supabaseClient.auth.onAuthStateChange((event, session) => {
+          console.log('AUTH EVENT:', event, session ? session.user.email : 'NO SESSION');
+          if (session) {
+            sessionEstablished = true;
+          }
+        });
+      }
+
+      // Execute on page load
+      document.addEventListener('DOMContentLoaded', async () => {
+        const success = await establishSession();
+        if (!success && !sessionEstablished) {
+          console.warn('NO RECOVERY SESSION FOUND ON PAGE LOAD');
+        }
+      });
+
+      /**
+       * Password Input Visibility Toggles
        */
       function setupPasswordToggle(inputEl, buttonEl) {
         buttonEl.addEventListener('click', function () {
@@ -424,9 +543,7 @@
       setupPasswordToggle(confirmPasswordInput, toggleConfirmPasswordBtn);
 
       /**
-       * Real-Time Validation:
-       * Enables "Open Attendance App" button ONLY when both passwords are entered,
-       * are at least 6 characters long, and match.
+       * Real-Time Form Validation
        */
       function validateForm() {
         const password = newPasswordInput.value;
@@ -453,7 +570,6 @@
           return false;
         }
 
-        // Passwords match and meet criteria! Enable active button.
         validationMsg.textContent = '✓ Passwords match! Ready to update.';
         validationMsg.className = 'validation-msg success';
         openAppBtn.disabled = false;
@@ -464,23 +580,13 @@
       confirmPasswordInput.addEventListener('input', validateForm);
 
       /**
-       * Show Banner Alert
-       */
-      function showAlert(message, isSuccess = false) {
-        alertCard.style.display = 'block';
-        alertCard.className = isSuccess ? 'alert-card success' : 'alert-card error';
-        alertCard.textContent = message;
-      }
-
-      /**
-       * Launch Mobile Attendance App via Deep Link
+       * Launch Attendance App Deep Link
        */
       function triggerAppLaunch() {
         helperText.style.display = 'block';
         const isAndroid = /Android/i.test(navigator.userAgent);
 
         if (isAndroid) {
-          // Intent link strategy for Android Chrome
           const link = document.createElement('a');
           link.href = ANDROID_INTENT_LINK;
           link.rel = 'noreferrer';
@@ -500,74 +606,41 @@
       }
 
       /**
-       * Process Password Reset and Update in Supabase
+       * Handle Password Update in Supabase & Redirect to Flutter App
        */
       async function handlePasswordUpdate() {
         if (!validateForm()) return;
 
         const newPassword = newPasswordInput.value;
 
-        // Set Loading State
+        // UI Loading State
         openAppBtn.disabled = true;
         btnText.textContent = 'Updating Password...';
         btnSpinner.style.display = 'inline-block';
-        alertCard.style.display = 'none';
+        hideAlert();
 
         try {
-          // 1. Establish session from URL hash / search params if not already set
           if (supabaseClient) {
-            const hash = window.location.hash;
-            const searchParams = new URLSearchParams(window.location.search);
-            const confirmationUrlParam = searchParams.get('confirmation_url');
-
-            // Handle confirmation_url if provided
-            if (confirmationUrlParam) {
-              try {
-                const decodedUrl = decodeURIComponent(confirmationUrlParam);
-                const verifyUrlObj = new URL(decodedUrl);
-                const tokenHash = verifyUrlObj.searchParams.get('token_hash') || verifyUrlObj.searchParams.get('token');
-                const type = verifyUrlObj.searchParams.get('type') || 'recovery';
-
-                if (tokenHash) {
-                  const { error: verifyError } = await supabaseClient.auth.verifyOtp({
-                    token_hash: tokenHash,
-                    type: type
-                  });
-                  if (verifyError) throw verifyError;
-                  sessionEstablished = true;
-                }
-              } catch (e) {
-                console.warn('Confirmation URL parsing error:', e);
-              }
+            // Re-verify or establish session if not already established
+            let active = sessionEstablished;
+            if (!active) {
+              active = await establishSession();
             }
 
-            // Fallback token extraction from hash / search
-            if (!sessionEstablished && (hash || window.location.search)) {
-              const hashParams = new URLSearchParams(hash.replace(/^#/, ''));
-              const accessToken = hashParams.get('access_token') || searchParams.get('access_token');
-              const refreshToken = hashParams.get('refresh_token') || searchParams.get('refresh_token');
-
-              if (accessToken && refreshToken) {
-                const { error: setSessionErr } = await supabaseClient.auth.setSession({
-                  access_token: accessToken,
-                  refresh_token: refreshToken
-                });
-                if (!setSessionErr) sessionEstablished = true;
-              }
-            }
-
-            // 2. Call Supabase updateUser to update password in auth.users
-            const { error: updateError } = await supabaseClient.auth.updateUser({
+            // Attempt to update password
+            const { data, error: updateError } = await supabaseClient.auth.updateUser({
               password: newPassword
             });
 
             if (updateError) {
               throw updateError;
             }
+
+            console.log('PASSWORD UPDATED SUCCESSFULLY FOR USER:', data?.user?.email);
           }
 
-          // 3. Password updated successfully!
-          showAlert('Password updated successfully in Supabase! Opening Attendance App...', true);
+          // Show Success Feedback
+          showAlert('<strong>Password Updated Successfully!</strong><br/>Opening Attendance App...', true);
           btnText.textContent = 'Opening App...';
 
           setTimeout(function () {
@@ -576,7 +649,7 @@
 
         } catch (err) {
           console.error('Password Update Error:', err);
-          showAlert(err.message || 'Failed to update password. Please check your link and try again.');
+          showAlert('<strong>Update Error:</strong> ' + (err.message || 'Auth session missing. Please request a new password reset email from the app.'));
           openAppBtn.disabled = false;
           btnText.textContent = 'Open Attendance App';
           btnSpinner.style.display = 'none';
@@ -592,4 +665,5 @@
     })();
   </script>
 </body>
+
 </html>
