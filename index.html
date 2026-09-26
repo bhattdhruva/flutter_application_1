@@ -151,28 +151,32 @@
       color: var(--info-text);
     }
 
-    /* Fallback OTP Form Card */
-    .otp-card {
+    /* In-App Browser Action Box */
+    .inapp-box {
       display: none;
-      background-color: #F8FAFC;
-      border: 1.5px solid var(--border-color);
+      background-color: #EFF6FF;
+      border: 1.5px solid #BFDBFE;
       border-radius: 16px;
       padding: 18px;
       margin-bottom: 20px;
       text-align: left;
     }
 
-    .otp-card h3 {
+    .inapp-box h3 {
       font-size: 14px;
-      font-weight: 600;
-      color: var(--text-main);
-      margin-bottom: 4px;
+      font-weight: 700;
+      color: #1E40AF;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
 
-    .otp-card p {
+    .inapp-box p {
       font-size: 12.5px;
-      color: var(--text-muted);
+      color: #1E3A8A;
       margin-bottom: 14px;
+      line-height: 1.45;
     }
 
     .form-group {
@@ -294,12 +298,12 @@
       opacity: 0.7;
     }
 
-    .btn-secondary {
+    .btn-chrome {
       width: 100%;
-      height: 44px;
-      background-color: #FFFFFF;
-      color: var(--primary);
-      border: 1.5px solid var(--primary);
+      height: 46px;
+      background-color: #0066FF;
+      color: #FFFFFF;
+      border: none;
       border-radius: 12px;
       font-size: 14px;
       font-weight: 600;
@@ -307,7 +311,9 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      margin-top: 8px;
+      gap: 8px;
+      margin-bottom: 8px;
+      text-decoration: none;
     }
 
     .spinner {
@@ -365,22 +371,11 @@
     <!-- Alert Message Container -->
     <div class="alert-card" id="alertCard" role="alert"></div>
 
-    <!-- Fallback OTP Section (Shown if Brave/Browser stripped URL tokens) -->
-    <div class="otp-card" id="otpCard">
-      <h3>Authentication Required</h3>
-      <p>Your browser stripped the session link. Enter your email and the 6-digit code or token from your reset email to verify:</p>
-      
-      <div class="form-group">
-        <label for="otpEmail">Email Address</label>
-        <input type="email" id="otpEmail" class="form-control" placeholder="your.email@example.com" style="padding-right: 16px;" />
-      </div>
-
-      <div class="form-group">
-        <label for="otpCode">6-Digit Code / Token</label>
-        <input type="text" id="otpCode" class="form-control" placeholder="e.g. 123456 or token" style="padding-right: 16px;" />
-      </div>
-
-      <button type="button" class="btn-secondary" id="verifyOtpBtn">Verify Code & Enable Form</button>
+    <!-- In-App Browser Action Box -->
+    <div class="inapp-box" id="inAppBox">
+      <h3>🌐 Open in Google Chrome</h3>
+      <p>Gmail's built-in viewer hides session tokens. Tap below to open in Google Chrome where your session link will load automatically:</p>
+      <a href="#" id="openInChromeBtn" class="btn-chrome">Open in Google Chrome</a>
     </div>
 
     <div id="contentSection">
@@ -475,10 +470,8 @@
       const btnText = document.getElementById('btnText');
       const btnSpinner = document.getElementById('btnSpinner');
       const alertCard = document.getElementById('alertCard');
-      const otpCard = document.getElementById('otpCard');
-      const otpEmail = document.getElementById('otpEmail');
-      const otpCode = document.getElementById('otpCode');
-      const verifyOtpBtn = document.getElementById('verifyOtpBtn');
+      const inAppBox = document.getElementById('inAppBox');
+      const openInChromeBtn = document.getElementById('openInChromeBtn');
       const helperText = document.getElementById('helperText');
       const retryLink = document.getElementById('retryLink');
 
@@ -519,7 +512,7 @@
             console.log('ACTIVE SESSION:', session.user.email);
             sessionEstablished = true;
             showAlert('✓ Recovery session active for: <strong>' + session.user.email + '</strong>', 'success');
-            otpCard.style.display = 'none';
+            inAppBox.style.display = 'none';
             return true;
           }
 
@@ -545,7 +538,7 @@
             if (!error && data?.session) {
               sessionEstablished = true;
               showAlert('✓ Session authenticated via recovery token', 'success');
-              otpCard.style.display = 'none';
+              inAppBox.style.display = 'none';
               return true;
             }
           }
@@ -558,7 +551,7 @@
             if (!error && data?.session) {
               sessionEstablished = true;
               showAlert('✓ Session authenticated via token hash', 'success');
-              otpCard.style.display = 'none';
+              inAppBox.style.display = 'none';
               return true;
             }
           }
@@ -568,7 +561,7 @@
             if (!error && data?.session) {
               sessionEstablished = true;
               showAlert('✓ Session authenticated via PKCE code', 'success');
-              otpCard.style.display = 'none';
+              inAppBox.style.display = 'none';
               return true;
             }
           }
@@ -577,50 +570,19 @@
           console.error('Session establishment error:', e);
         }
 
-        // Show Fallback OTP verification form if session not established automatically
+        // Detect if loaded inside Gmail / App WebView
         sessionEstablished = false;
-        showAlert('<strong>Notice:</strong> No active recovery session in URL. If your browser stripped the link tokens, enter your email & code below.', 'info');
-        otpCard.style.display = 'block';
+        inAppBox.style.display = 'block';
+        showAlert('<strong>Notice:</strong> Gmail viewer stripped the session token. Tap <strong>Open in Google Chrome</strong> above to load your reset page.', 'info');
         return false;
       }
 
-      // Verify OTP Code manually if browser stripped URL
-      verifyOtpBtn.addEventListener('click', async function () {
-        const email = otpEmail.value.trim();
-        const code = otpCode.value.trim();
-
-        if (!email || !code) {
-          showAlert('Please enter both your email address and the code/token received in your email.');
-          return;
-        }
-
-        verifyOtpBtn.disabled = true;
-        verifyOtpBtn.textContent = 'Verifying...';
-
-        try {
-          // Attempt verifyOtp with token
-          const { data, error } = await supabaseClient.auth.verifyOtp({
-            email: email,
-            token: code,
-            type: 'recovery'
-          });
-
-          if (error) throw error;
-
-          if (data?.session) {
-            sessionEstablished = true;
-            showAlert('✓ Session verified for <strong>' + email + '</strong>! You may now set your new password below.', 'success');
-            otpCard.style.display = 'none';
-            validateForm();
-          } else {
-            throw new Error('Verification failed. Check your email and code.');
-          }
-        } catch (err) {
-          showAlert('OTP Verification Error: ' + (err.message || 'Invalid code or email.'));
-        } finally {
-          verifyOtpBtn.disabled = false;
-          verifyOtpBtn.textContent = 'Verify Code & Enable Form';
-        }
+      // Configure Chrome Intent button for Gmail In-App WebView
+      openInChromeBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        const currentUrlWithoutHash = window.location.href;
+        const chromeIntent = 'intent://' + currentUrlWithoutHash.replace(/^https?:\/\//, '') + '#Intent;scheme=https;package=com.android.chrome;end;';
+        window.location.href = chromeIntent;
       });
 
       // Listen for auth state changes
@@ -628,7 +590,7 @@
         supabaseClient.auth.onAuthStateChange((event, session) => {
           if (session) {
             sessionEstablished = true;
-            otpCard.style.display = 'none';
+            inAppBox.style.display = 'none';
             showAlert('✓ Active session verified for ' + session.user.email, 'success');
           }
         });
@@ -751,7 +713,7 @@
 
         } catch (err) {
           console.error('Password Update Error:', err);
-          showAlert('<strong>Update Error:</strong> ' + (err.message || 'Auth session missing. Use the verification box above to authenticate.'), 'error');
+          showAlert('<strong>Update Error:</strong> ' + (err.message || 'Auth session missing. Tap Open in Google Chrome above.'), 'error');
           openAppBtn.disabled = false;
           btnText.textContent = 'Open Attendance App';
           btnSpinner.style.display = 'none';
